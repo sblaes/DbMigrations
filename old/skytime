@@ -36,12 +36,12 @@ def getDatestampFromTimestamp(timestamp):
 
 def success(msg=None):
 	if(msg != None):
-		print msg
+		print(msg)
 	exit(0)
 
 def fail(msg=None):
 	if(msg != None):
-		print msg
+		print(msg)
 	exit(1)
 
 def getTime():
@@ -49,4 +49,4 @@ def getTime():
 		return getDatestampFromTimestamp(uri[2](getRequestToUri(uri[0],uri[1])))
 
 if(__name__ == "__main__"):
-	print getTime()
+	print(getTime())
