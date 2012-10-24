@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-from dbmigration import DbMigrator, ConfigFileReader
+from dbmigration import DbMigrator, ConfigFile
 from currtime import getDatestampFromTimestamp
 import shutil
 import os
@@ -9,7 +9,8 @@ import json
 
 testLocation = "testspace"
 testDb = "testDb"
-sampleConfigBody = {'hostname':'blergh','port':42}
+testPass = 'abcdef'
+sampleConfigBody = {'hostname':'blergh','port':42,'database':testDb,'password':testPass,'user':'xxx'}
 
 def deleteIfExists(location):
     if(os.path.exists(location)):
@@ -75,9 +76,13 @@ class ConfigFileReaderTest(unittest.TestCase):
     def testReadsFromFile(self):
         conf = testLocation+"/config"
         self.createSampleConfig(conf)
-        reader = ConfigFileReader(conf)
+        reader = ConfigFile()
+        reader.initializeFromFile(conf)
         self.assertEquals("blergh", reader.getHostname())
         self.assertEquals(42, reader.getPort())
+        self.assertEquals("xxx", reader.getUser())
+        self.assertEquals(testPass, reader.getPassword())
+        self.assertEquals(testDb, reader.getDatabase())
 
 if __name__=="__main__":
     unittest.main()
