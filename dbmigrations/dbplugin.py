@@ -12,3 +12,6 @@ class DbPlugin:
 
     def execute(self, stuff):
         raise NotImplementedError("Cannot evaluate unimplemented function.")
+
+    def isOpen(self):
+        raise NotImplementedError("Cannot evaluate unimplemented function.")

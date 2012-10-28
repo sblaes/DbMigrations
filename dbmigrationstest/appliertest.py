@@ -10,11 +10,9 @@ import json
 class ApplyTest(TestCase):
 
     def testDirectAppy(self):
-        config = ConfigFile()
-        config.initializeFromFile(createActualConfig())
-        creator = MigrationCreator("zyxw", testLocation())
+        creator = MigrationCreator("migtest", testLocation())
         target = creator.createMigration()
         self.assertTrue(os.path.exists(target))
         writeToFile(target+"/up", "create table xxx (yyy integer primary key);")
-        migrator = DbMigrator(config)
+        migrator = MigrationApplier('postgresql','localhost', '5432', "migtest",'dbmigrations', None, testLocation())
         migrator.applyMigration(target)

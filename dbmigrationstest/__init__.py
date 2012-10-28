@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from applytest import *
-from createtest import *
+from appliertest import *
+from creatortest import *
 from currtimetest import *
 from configfiletest import *
+from configtest import *

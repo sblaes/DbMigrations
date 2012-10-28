@@ -7,3 +7,4 @@ from pgplugin import *
 from configfile import *
 from creator import *
 from applier import *
+from config import *

@@ -5,7 +5,6 @@ def initOptionParser(parser):
     parser.add_argument('-d','-db','--database',dest="database",help='Set the database name.')
     parser.add_argument('-a','--advanced',action="store_true",dest="advanced",help='Create an advanced migration.')
     parser.add_argument('-b','--basedir',dest='basedir',help='Specify the migraitons base directory.')
-    return parser
 
 def main(args):
     if(args.help):
