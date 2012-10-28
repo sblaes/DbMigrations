@@ -1,4 +1,4 @@
-from dbmigrations import *
+from dbmigrations import PgPlugin
 
 def initOptionParser(parser):
     parser.add_argument('-o',nargs=2,action='append',dest='options',metavar=('KEY','VALUE'),help='Specify migrator options.')
