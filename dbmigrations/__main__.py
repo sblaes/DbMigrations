@@ -14,20 +14,34 @@ def main():
     if(args.help):
         args.parser.print_help()
         return
-    args.func(args)
+    elif(args.version):
+        print('DbMigrations '+settings.VERSION)
+        return
+    else:
+        if(args.prefix != None):
+            settings.ENVIRONMENT_PREFIX = args.prefix
+        args.func(args)
+
 
 def makeOptionParser():
     parser = argparse.ArgumentParser(prog='dbmigrations')
+    parser.add_argument('--env-prefix',dest='prefix',default=None,help='set the environment prefix')
+
     subparsers = parser.add_subparsers(title='subcommands')
+    version = subparsers.add_parser('version',add_help=False)
+    version.set_defaults(version=True,help=False)
+
     combineParsers(subparsers, 'create', creator.main, creator.initOptionParser)
     combineParsers(subparsers, 'apply', applier.main, applier.initOptionParser)
+
     if(settings.PRINT_CONFIG_ENABLED):
         combineParsers(subparsers, 'print-config', config.main, config.initOptionParser)
     return parser
 
-def combineParsers(subparsers, name, main, initParser):
+def combineParsers(subparsers, name, main, initParser=None):
     sub = subparsers.add_parser(name,add_help=False)
-    initParser(sub)
+    if(initParser != None):
+        initParser(sub)
     sub.add_argument("--help",dest="help",action="store_true",help="show this help message and exit")
     sub.set_defaults(func=main,parser=sub)
 

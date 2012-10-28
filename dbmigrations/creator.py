@@ -1,9 +1,10 @@
 import currtime
 import os
 import stat
-from dbmigrations.logger import getLogger
+from dbmigrations.logger import getLogger, error
 
 def initOptionParser(parser):
+    '''Initialize the subparser for MigrationCreator.'''
     parser.add_argument('-a','--advanced',action="store_true",dest="advanced",help='Create an advanced migration.')
     parser.add_argument('-b','--basedir',dest='basedir',default='.',help='Specify the migrations base directory.')
     parser.add_argument('-d','--db','--database',dest='database',default=None,help='Specify the database name.',required=True)
@@ -11,17 +12,16 @@ def initOptionParser(parser):
 
 def main(args):
     if(args.basedir == None):
-        logger.error('Invalid migration base directory: %s' % args.basedir)
+        error('Invalid migration base directory: %s' % args.basedir)
         return
     creator = MigrationCreator(args.database, args.basedir)
     creator.createMigration(advanced=args.advanced,version=args.version)
-
-logger = getLogger()
 
 class MigrationCreator:
     def __init__(self, database, basedir):
         self.database = database
         self.basedir = basedir
+        self.logger = getLogger('MigrationCreator')
 
     def createFolder(self, filename):
         if(not(os.path.exists(filename))):
@@ -49,10 +49,10 @@ class MigrationCreator:
         else:
             name = str(version)
         self.createFolder(self.basedir)
-        self.createFolder(self.basedir + "/" + self.database)
-        self.createFolder(self.basedir+"/"+self.database+"/"+name)
-        target = self.basedir+"/"+self.database+"/"+name + "/up"
-        #print "Created migration version %s at %s" % (name, target)
+        self.createFolder(os.path.join(self.basedir,self.database))
+        self.createFolder(os.path.join(self.basedir,self.database,name))
+        target = os.path.join(self.basedir,self.database,name,'up')
+        self.logger.info("Created migration version %s at %s" % (name, target))
         self.createFile(target, body, advanced)
         return name
 

@@ -9,11 +9,13 @@ def initOptionParser(parser):
     parser.add_argument('--env-prefix',dest='prefix',help='Specify the environment prefix.')
 
 def main(args):
+    '''Prints a given configuration using the given parsed command line arguments'''
     conf = Config()
     conf.initAll(args)
     conf.printFull()
 
 def readFromFile(conf, filename):
+    '''Reads the configuration from the json object in the specified file.'''
     if(os.path.exists(filename)):
         f = open(filename,'r')
         body = f.read()

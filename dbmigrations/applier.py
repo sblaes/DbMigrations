@@ -1,45 +1,72 @@
-from dbmigrations import PgPlugin
-from dbmigrations.helper import makePath
+'''Migration Applier class.
+
+The migration applier class is responsible for applying migrations.
+'''
+
+from dbmigrations.pgplugin import PgPlugin
 from dbmigrations.config import Config
-from dbmigrations.logger import getLogger
+from dbmigrations.logger import getLogger, error
 import os
 
 def initOptionParser(parser):
+    '''Initialize the subparser for MigrationApplier.'''
     parser.add_argument('-o',nargs=2,action='append',dest='options',metavar=('KEY','VALUE'),help='Specify migrator options.')
     parser.add_argument('-b','--basedir',dest='basedir',help='Specify the migrations base directory.')
     parser.add_argument('-v','--version',dest='version',help='Force application of a specific version.')
     parser.add_argument('--env-prefix',dest='prefix',help='Specify the environment prefix.')
 
-logger = getLogger()
-
 def main(args):
+    '''Run the migration applier using the given parsed command line arguments.'''
     conf = Config()
     conf.initAll(args)
     if(args.basedir == None):
         args.basedir = '.'
     if(not(os.path.exists(args.basedir))):
-        logger.error('Invalid migration base director: %s' % args.basedir)
+        error('Invalid migration base director: %s' % args.basedir)
         return
     migrator = MigrationApplier(args.basedir, conf)
     if(args.version == None):
         migrator.applyAllMigrations()
     else:
-        migrator.applyMigration(args.version)
+        migrator.applySingleMigration(args.version)
 
 class MigrationApplier:
+    '''MigrationApplier class
+
+    To apply groups of migrations, use applyAllMigrations() or applyMigrations(versions)
+
+    To apply a specific migration version, use applySingleMigration(version)
+    '''
+
     def __init__(self, basedir, config):
+        '''Create a MigrationApplier from the given base directory and configuration.
+
+        The base directory must exist, and the configuration must contain ample
+        information for the adapter to connect to the database.
+        '''
         self.config = config
         self.basedir = basedir
         self.initializePlugin()
+        self.logger = getLogger('MigrationApplier')
 
     def getUpFile(self, version):
-        return makePath(self.basedir, self.config['database'], version, 'up')
+        '''Get the up file for a particular version.
+
+        The up file is calculated as os.path.join(basedir,databasename,version,'up')
+        '''
+        return os.path.join(self.basedir,self.config['database'],version,'up')
 
     def applyAllMigrations(self):
-        versions = os.listdir(self.basedir+'/'+self.config['database'])
+        '''Apply all migrations in the base directory in lexicographic order,
+        starting with the first version after the current database version.
+        '''
+        versions = os.listdir(os.path.join(self.basedir,self.config['database']))
         self.applyMigrations(versions)
 
     def applyMigrations(self, versions):
+        '''Apply a specific group of migrations in lexicographic order,
+        starting with the first version after the current database version.
+        '''
         sortedVersions = sorted(versions)
         self.plugin.openSession()
         try:
@@ -48,36 +75,47 @@ class MigrationApplier:
                     self.applyMigration(version)
         finally:
             if(self.plugin.isOpen()):
-                logger.warn('Migration '+version+' failed. Rolling back.')
+                self.logger.warn('Migration \''+version+'\' failed. Rolling back.')
                 self.plugin.rollbackTransaction()
             self.plugin.closeSession()
 
     def applyMigration(self, version):
+        '''Apply a specific migration version.
+
+        A database connection must already be established.
+        '''
         self.plugin.openTransaction()
-        logger.debug("Applying migration "+version)
-        self.applyAtomicMigration(version)
-        logger.debug("Migration "+version+" applied successfully.")
-        self.plugin.updateVersion(version)
-        self.plugin.commitTransaction()
-
-    def applySingleMigration(self, version):
-        self.plugin.openSession()
-        try:
-            self.applyMigration(version)
-        finally:
-            if(self.plugin.isOpen()):
-                logger.warn('Migration '+version+' failed. Rolling back.')
-                self.plugin.rollbackTransaction()
-            self.plugin.closeSession()
-
-    def applyAtomicMigration(self, version):
+        self.logger.info("Applying migration "+version)
         path = self.getUpFile(version)
         f = open(path,'r')
         stuff = f.read()
         f.close()
         self.plugin.execute(stuff)
+        self.logger.debug("Migration "+version+" applied successfully.")
+        self.plugin.updateVersion(version)
+        self.plugin.commitTransaction()
+
+    def applySingleMigration(self, version):
+        '''Apply a specific migration version, establishing and closing the database
+        connection around the migration.
+
+        This function is not to be used when applying large groups of migrations.
+        Use applyMigrations or applyAllMigrations instead.
+        '''
+        self.plugin.openSession()
+        try:
+            self.applyMigration(version)
+        finally:
+            if(self.plugin.isOpen()):
+                self.logger.error('Migration '+version+' failed. Rolling back.')
+                self.plugin.rollbackTransaction()
+            self.plugin.closeSession()
 
     def initializePlugin(self):
+        '''Creates the database adapter from the current configuration.
+
+        Raises a RuntimeError if the adapter is not recognized.
+        '''
         self.plugin = None
         adapter = self.config['adapter']
         if(adapter == 'postgresql'):
