@@ -47,11 +47,15 @@ a {
 
 p {
     color: #657b83;
-    font-size:11pt;
+    font-size:10pt;
 }
 
 em {
     color: #586e75;
+}
+
+pre {
+    font-size:9pt;
 }
 
 strong {
