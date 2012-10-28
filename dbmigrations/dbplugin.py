@@ -1,17 +1,34 @@
 #!/usr/bin/env python
 
 class DbPlugin:
-    def setOption(self, key, value):
-        raise NotImplementedError("Cannot evaluate unimplemented function.")
 
+    # Version Management
+    def getLatestVersion(self):
+        raise NotImplementedError("Cannot evaluate unimplemented function getLatestVersion.")
+
+    def updateVersion(self, version):
+        raise NotImplementedError("Cannot evaluate unimplemented function updateVersion.")
+
+    # Session Management
     def openSession(self):
-        raise NotImplementedError("Cannot evaluate unimplemented function.")
+        raise NotImplementedError("Cannot evaluate unimplemented function openSession.")
 
     def closeSession(self):
-        raise NotImplementedError("Cannot evaluate unimplemented function.")
+        raise NotImplementedError("Cannot evaluate unimplemented function closeSession.")
 
-    def execute(self, stuff):
-        raise NotImplementedError("Cannot evaluate unimplemented function.")
+    # Transaction Management
+    def openTransaction(self):
+        raise NotImplementedError("Cannot evaluate unimplemented function openTransaction.")
+
+    def commitTransaction(self):
+        raise NotImplementedError("Cannot evaluate unimplemented function commitTransaction.")
+
+    def rollbackTransaction(self):
+        raise NotImplementedError("Cannot evaluate unimplemented function rollbackTransaction.")
 
     def isOpen(self):
-        raise NotImplementedError("Cannot evaluate unimplemented function.")
+        raise NotImplementedError("Cannot evaluate unimplemented function isOpen.")
+
+    # Command Execution
+    def execute(self, stuff):
+        raise NotImplementedError("Cannot evaluate unimplemented function execute.")

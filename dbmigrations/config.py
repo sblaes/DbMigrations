@@ -27,7 +27,7 @@ class Config:
             options = {}
         self.options = options
 
-    def initAll(args):
+    def initAll(self,args):
         # Configuration File
         if(args.basedir != None):
             readFromFile(self, args.basedir + '/dbmigrations.conf')

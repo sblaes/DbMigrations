@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from testhelper import *
 from dbmigrations.currtime import getDatestampFromTimestamp
 

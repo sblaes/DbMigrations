@@ -1,4 +1,3 @@
-# from dbmigrations import Config
 from dbmigrations import Config
 from dbmigrationstest import TestCase
 
