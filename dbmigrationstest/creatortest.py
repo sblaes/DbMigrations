@@ -23,7 +23,7 @@ class CreateTest(TestCase):
 
     def testCreateSpecificMigration(self):
         migrator = MigrationCreator("zyxw", testLocation())
-        target = migrator.createMigration('abcdef')
+        target = migrator.createMigration(version='abcdef')
         self.assertEquals('testspace//zyxw/abcdef/', target)
 
     def testCreateMigrationWithBody(self):

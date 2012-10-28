@@ -1,7 +1,15 @@
 DbMigrations Project Configuration
 ==================================
 
-Up: [DbMigrations Documentation Main][up]
+Up: [DbMigrations Documentation][up]
+
+Contents:
+
+ - [Purpose][purpose]
+ - [Environment Variables][envVars]
+ - [Configuration File] [confFile]
+ - [Passwords and Security][security]
+ - [Printing Configurations][printing]
 
 Purpose
 -------
@@ -22,10 +30,15 @@ Providing passwords through command line arguments is **strongly discouraged**, 
 
 For example:
 
-`dbmigrations apply -o database testDb -o user testUser -o host my.host`
+    dbmigrations print-config -o database testDb -o user testUser -o host my.host 
+    Key       Value
+    host      my.host
+    user      testUser
+    database  testDb
 
-
-`dbmigrations apply -o db testDb`
+    dbmigrations print-config -o db testDb                                       
+    Key   Value
+    db    testDb
 
 Environment Variables
 ---------------------
@@ -36,26 +49,16 @@ DbMigrations will ignore all environment variables that do not begin with the en
 
 By default, the prefix is "`MIG_`".
 
-Providing passwords through environment variables is **strongly discouraged**, see the note about [security][security] for more information.
-
 For example, using the default prefix:
 
-`MIG_DATABASE=dbTest MIG_PASSWORD=wXyZ dbmigrations`
+    MIG_DATABASE=dbTest MIG_PASSWORD=wXyZ dbmigrations print-config
+    Key       Value
+    password  wXyZ
+    database  dbTest
 
-produces the configuration:
-<table>
-    <tr><th>Key</th><th>Value</th></tr>
-    <tr><td><code>database</code></td><td>dbTest</td></tr>
-    <tr><td><code>password</code></td><td>wXyZ</td></tr>
-</table>
-
-`DATABASE=dbTest MIG_PASSWORD=wXyZ dbmigrations`
-
-produces the configuration:
-<table>
-    <tr><th>Key</th><th>Value</th></tr>
-    <tr><td><code>password</code></td><td>wXyZ</td></tr>
-</table>
+    DATABASE=dbTest MIG_PASSWORD=wXyZ dbmigrations print-config
+    Key       Value
+    password  wXyZ
 
 The prefix can be changed with the command line argument `--env-prefix PREFIX`.
 
@@ -66,17 +69,24 @@ A project settings file may be provided to specify configuration options for a s
 
 The body of the file is simply a [JSON][json] object with keys and values for each option.
 
+Providing passwords through configuration files is **strongly discouraged**, see the note about [security][security] for more information.
+
 Passwords and Security
 ----------------------
 
-For security reasons, providing passwords via configuration files or via command line arguments is **strongly discouraged**. However, since DbMigrations does not place any restrictions on the content or meanings of the options, DbMigrations will stupidly allow providing passwords through all three methods.
+For security reasons, providing passwords in plaintext via configuration files or command line arguments is **strongly discouraged**. However, since DbMigrations does not place any restrictions on the content or meanings of options, DbMigrations naively allows providing passwords through all three methods. It is recommended that database passwords only be provided through environment variables.
 
-It is recommended that database passwords only be provided through environment variables.
+Printing Configurations
+-----------------------
 
+For debugging purposes, DbMigrations provides a way to print configuration options at the command line. This can be invoked by running `dbmigrations print-config`. For security reasons, this has been disabled by default. Enabling this feature can be done by setting the `PRINT_CONFIG_ENABLED` option to `True` in [settings.py][settings].
 
 [up]: http://zealjagannatha.com/DbMigrations/main.md "DbMigrations Documentation"
 [security]: #Passwords.and.Security "Passwords and Security"
 [confFile]: #Configuration.File "Configuration File"
 [envVars]: #Environment.Variables "Environment Variables"
 [commandArgs]: #Command.Line.Arguments "Command Line Arguments"
+[printing]: #Printing.Configurations "Printing Configurations"
 [json]: http://www.json.org/ "JSON"
+[settings]: http://zealjagannatha.com/DbMigrations/settings.md "DbMigrations Settings"
+[purpose]: #Purpose "Purpose"

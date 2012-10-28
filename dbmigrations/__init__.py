@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from currtime import *
 from dbplugin import *
 from migrator import *

@@ -1,16 +1,12 @@
 from dbmigrations import *
 
 def initOptionParser(parser):
-    parser.add_argument("-d","--db","--database",dest="database",help="Specify the database name.")
-    parser.add_argument("-h","--host","--hostname",dest="hostname",help="Specify the database hostname.")
-    parser.add_argument("-p","--port",dest="port",help="Specify the database port.")
-    parser.add_argument("-U","--user","--username",dest="username",help="Specify the database username.")
-    parser.add_argument('-b','--basedir',dest='basedir',help='Specify the migraitons base directory.')
+    parser.add_argument('-o',nargs=2,action='append',dest='options',metavar=('KEY','VALUE'),help='Specify migrator options.')
+    parser.add_argument('-b','--basedir',dest='basedir',help='Specify the migrations base directory.')
+    parser.add_argument('-v','--version',dest='version',help='Force application of a specific version.')
+    parser.add_argument('--env-prefix',dest='prefix',help='Specify the environment prefix.')
 
 def main(args):
-    if(args.help):
-        args.parser.print_help()
-        return
     print args
     print("Apply...")
 
