@@ -69,7 +69,7 @@ Three different interfaces exist for specifying options for DbMigrations migrato
 
 Key/Value pairs can be passed to the migrator with the `-o KEY VALUE` flag.
 
-Providing passwords through command line arguments is **strongly discouraged**, see the note about [Passwords and Security](#Passwords.and.Security) for more information.
+Providing passwords through command line arguments is **strongly discouraged**, see the note about [Passwords and Security](#passwords-and-security) for more information.
 
 For example:
 
@@ -88,7 +88,7 @@ Since this notation can be unweildy for commonly used options, the following sho
  - `-p PORT` equivalent to `-o port PORT`
  - `-U USER` equivalent to `-o user USER`
 
-No shorthand is provided to set a password because command line arguments is an insecure of providing command line arguments. See the note about [Passwords and Security](#Passwords.and.Security) for more information.
+No shorthand is provided to set a password because command line arguments is an insecure of providing command line arguments. See the note about [Passwords and Security](#passwords-and-security) for more information.
 
 ### Environment Variables
 
@@ -117,7 +117,7 @@ A project settings file may be provided to specify configuration options for a s
 
 The body of the file is simply a [JSON](http://www.json.org/) object with keys and values for each option.
 
-Providing passwords through configuration files is **strongly discouraged**, see the note about [Passwords and Security](#Passwords.and.Security) for more information.
+Providing passwords through configuration files is **strongly discouraged**, see the note about [Passwords and Security](#passwords-and-security) for more information.
 
 ### Passwords and Security
 
