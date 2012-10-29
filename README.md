@@ -17,8 +17,6 @@ To create a new migration, `dbmigrations create` can be executed. This will crea
 
 To specify a specific version name for creation, `-v VERSION` can be supplied. `VERSION` is not required to be a timestamp in the format above, but when using this flag be aware of the order in which migrations are applied.
 
-Usage:
-
     usage: dbmigrations create [-a] [-b BASEDIR] [-d DATABASE] [-v VERSION]
                                [--help]
 
@@ -35,8 +33,6 @@ Usage:
 ### Migration Application
 
 To run migrations, `dbmigrations apply` can be executed. This will apply all migrations in the migrations base directory (specified with `-b`) with the specified database name (specified with `-o database`). It will apply each migration in Lexicographical order.
-
-Usage:
 
     usage: dbmigrations apply [-o KEY VALUE] [-b BASEDIR] [-v VERSION]
                               [--env-prefix PREFIX] [-h HOST] [-d DATABASE]
