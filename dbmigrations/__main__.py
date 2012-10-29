@@ -14,7 +14,7 @@ def main():
     if(args.help):
         args.parser.print_help()
         return
-    elif(args.version):
+    elif(args.print_version):
         print('DbMigrations '+settings.VERSION)
         return
     else:
@@ -25,11 +25,12 @@ def main():
 
 def makeOptionParser():
     parser = argparse.ArgumentParser(prog='dbmigrations')
+    parser.set_defaults(print_version=False)
     parser.add_argument('--env-prefix',dest='prefix',default=None,help='set the environment prefix')
 
     subparsers = parser.add_subparsers(title='subcommands')
     version = subparsers.add_parser('version',add_help=False)
-    version.set_defaults(version=True,help=False)
+    version.set_defaults(print_version=True,help=False)
 
     combineParsers(subparsers, 'create', creator.main, creator.initOptionParser)
     combineParsers(subparsers, 'apply', applier.main, applier.initOptionParser)

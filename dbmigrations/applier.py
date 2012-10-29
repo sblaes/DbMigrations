@@ -14,6 +14,10 @@ def initOptionParser(parser):
     parser.add_argument('-b','--basedir',dest='basedir',help='Specify the migrations base directory.')
     parser.add_argument('-v','--version',dest='version',help='Force application of a specific version.')
     parser.add_argument('--env-prefix',dest='prefix',help='Specify the environment prefix.')
+    parser.add_argument('-h',dest='host',help='Equivalent to `-o host HOST`.')
+    parser.add_argument('-d',dest='database',help='Equivalent to `-o database DATABASE`.')
+    parser.add_argument('-p',dest='port',help='Equivalent to `-o port PORT`.')
+    parser.add_argument('-U',dest='user',help='Equivalent to `-o user USER`.')
 
 def main(args):
     '''Run the migration applier using the given parsed command line arguments.'''

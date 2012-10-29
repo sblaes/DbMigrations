@@ -132,26 +132,26 @@ class Logger:
 
 master_logger = getLogger('<module>')
 
-def debug(self, messages):
+def debug(message):
     '''Print a debug message on the master logger.'''
     master_logger.debug(message)
 
-def info(self, messages):
+def info(message):
     '''Print an info message on the master logger.'''
     master_logger.info(message)
 
-def warn(self, messages):
+def warn(message):
     '''Print a warning message on the master logger.'''
     master_logger.warn(message)
 
-def severe(self, messages):
+def severe(message):
     '''Print a severe message on the master logger.'''
     master_logger.severe(message)
 
-def error(self, messages):
+def error(message):
     '''Print an error message on the master logger.'''
     master_logger.error(message)
 
-def fatal(self, messages):
+def fatal(message):
     '''Print a fatal message on the master logger.'''
     master_logger.fatal(message)

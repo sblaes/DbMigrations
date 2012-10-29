@@ -1,4 +1,5 @@
 from dbmigrations import settings
+import getpass
 import os
 import json
 import formatter
@@ -7,6 +8,11 @@ def initOptionParser(parser):
     parser.add_argument('-o',nargs=2,action='append',dest='options',metavar=('KEY','VALUE'),help='Specify migrator options.')
     parser.add_argument('-b','--basedir',dest='basedir',help='Specify the migrations base directory.')
     parser.add_argument('--env-prefix',dest='prefix',help='Specify the environment prefix.')
+    parser.add_argument('-h',dest='host',help='Equivalent to `-o host HOST`.')
+    parser.add_argument('-d',dest='database',help='Equivalent to `-o database DATABASE`.')
+    parser.add_argument('-p',dest='port',help='Equivalent to `-o port PORT`.')
+    parser.add_argument('-U',dest='user',help='Equivalent to `-o user USER`.')
+
 
 def main(args):
     '''Prints a given configuration using the given parsed command line arguments'''
@@ -30,6 +36,9 @@ class Config:
         self.options = options
 
     def initAll(self,args):
+        self.options['host'] = 'localhost'
+        self.options['port'] = '5432'
+        self.options['user'] = getpass.getuser()
         # Configuration File
         if(args.basedir != None):
             readFromFile(self, args.basedir + '/dbmigrations.conf')
@@ -44,6 +53,14 @@ class Config:
                 key = pair[0]
                 value = pair[1]
                 self[key] = value
+            if(args.host != None):
+                self.options['host'] = args.host
+            if(args.database != None):
+                self.options['database'] = args.database
+            if(args.port != None):
+                self.options['port'] = args.port
+            if(args.user != None):
+                self.options['user'] = args.user
 
     def put(self, key, value):
         '''Associate value to key in this config.'''

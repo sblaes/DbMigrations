@@ -7,10 +7,13 @@ def initOptionParser(parser):
     '''Initialize the subparser for MigrationCreator.'''
     parser.add_argument('-a','--advanced',action="store_true",dest="advanced",help='Create an advanced migration.')
     parser.add_argument('-b','--basedir',dest='basedir',default='.',help='Specify the migrations base directory.')
-    parser.add_argument('-d','--db','--database',dest='database',default=None,help='Specify the database name.',required=True)
-    parser.add_argument('-v','--version',dest='version',help='Specify the migration version.')
+    parser.add_argument('-d','--db','--database',dest='database',default=None,help='Specify the database name.')
+    parser.add_argument('-v',dest='version',help='Specify the migration version.')
 
 def main(args):
+    if(args.database == None):
+        error('Invalid database: %s' % args.database)
+        return
     if(args.basedir == None):
         error('Invalid migration base directory: %s' % args.basedir)
         return
