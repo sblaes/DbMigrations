@@ -1,9 +1,0 @@
-<project name="dbmigrations" default="test">
-  <target name="test">
-    <exec executable="python" failonerror="true">
-      <arg value="-m"/>
-      <arg value="unittest"/>
-      <arg value="dbmigrationstest"/>
-    </exec>
-  </target>
-</project>
