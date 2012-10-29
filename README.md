@@ -6,8 +6,8 @@ Purpose
 
 DbMigrations is a DBMS-independent migration system for maintaining database schemas. It maintains a linear progress of database changes and is capable of both creating and applying new migrations.
 
-Subcommands
---------------
+Usage
+-----
 
 DbMigrations is divided into various subcommands each implement a different feature. To obtain a list of subcommands, use `dbmigrations --help`.
 
