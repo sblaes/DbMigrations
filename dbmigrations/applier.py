@@ -7,6 +7,7 @@ from dbmigrations.pgplugin import PgPlugin
 from dbmigrations.config import Config
 from dbmigrations.logger import getLogger, error
 import os
+import subprocess
 
 def initOptionParser(parser):
     '''Initialize the subparser for MigrationApplier.'''
@@ -91,13 +92,33 @@ class MigrationApplier:
         self.plugin.openTransaction()
         self.logger.info("Applying migration "+version)
         path = self.getUpFile(version)
+        print "%s %s" % (path, self.isAdvanced(path),)
+        if self.isAdvanced(path):
+            self.applyAdvancedMigration(path)
+        else:
+            self.applySimpleMigration(path)
+        self.logger.debug("Migration "+version+" applied successfully.")
+        self.plugin.updateVersion(version)
+        self.plugin.commitTransaction()
+
+    def applyAdvancedMigration(self, path):
+        proc = subprocess.Popen(path,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        result = proc.communicate()
+        stdout = result[0]
+        stderr = result[1]
+        if(stdout != None and stdout != ''):
+            self.logger.info('Advanced Migration stdout:')
+            self.logger.info(stdout)
+        if(stderr != None and stderr != ''):
+            self.logger.info('Advanced Migration stderr:')
+            self.logger.info(stderr)
+            raise RuntimeError('Advanced migration failed.')
+
+    def applySimpleMigration(self, path):
         f = open(path,'r')
         stuff = f.read()
         f.close()
         self.plugin.execute(stuff)
-        self.logger.debug("Migration "+version+" applied successfully.")
-        self.plugin.updateVersion(version)
-        self.plugin.commitTransaction()
 
     def applySingleMigration(self, version):
         '''Apply a specific migration version, establishing and closing the database
@@ -127,3 +148,6 @@ class MigrationApplier:
         else:
             raise RuntimeError("Invalid database adapter: "+adapter)
         return adapter
+
+    def isAdvanced(self,filename):
+        return os.path.isfile(filename) and os.access(filename, os.X_OK)

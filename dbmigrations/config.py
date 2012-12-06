@@ -39,6 +39,7 @@ class Config:
         self.options['host'] = 'localhost'
         self.options['port'] = '5432'
         self.options['user'] = getpass.getuser()
+        self.optiona['adapter'] = 'postgresql'
         # Configuration File
         if(args.basedir != None):
             readFromFile(self, args.basedir + '/dbmigrations.conf')

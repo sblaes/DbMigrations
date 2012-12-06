@@ -97,3 +97,9 @@ class TestCase(unittest.TestCase):
         conn.close()
         self.assertNotEquals(None, result)
         self.assertEquals(str(version), result[0])
+
+    def assertExecutable(self,filename):
+        self.assertTrue(os.path.isfile(filename) and os.access(filename, os.X_OK))
+
+    def assertFileExists(self, filename):
+        self.assertTrue(os.path.isfile(filename))

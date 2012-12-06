@@ -26,6 +26,12 @@ class CreateTest(TestCase):
         target = testLocation('zyxw','abcdef','up')
         self.assertEquals('testspace/zyxw/abcdef/up', target)
 
+    def testAdvancedMigration(self):
+        migrator = MigrationCreator("zyxw", testLocation())
+        name = migrator.createMigration(advanced=True)
+        target = testLocation('zyxw',name,'up')
+        self.assertExecutable(target)
+
     def testCreateMigrationWithBody(self):
         migrator = MigrationCreator("zyxw", testLocation())
         target = migrator.createMigration()

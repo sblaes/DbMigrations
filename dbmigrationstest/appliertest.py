@@ -6,6 +6,7 @@ import os
 import json
 
 class ApplyTest(TestCase):
+
     def testDirectAppy(self):
         creator = MigrationCreator('migtest', testLocation())
         target = creator.createMigration()
@@ -89,3 +90,13 @@ class ApplyTest(TestCase):
         self.assertVersion(1)
         self.assertColumnExists('xxx','yyy')
         self.assertTableNotExists('aaa')
+
+    def testAdvancedMigration(self):
+        creator = MigrationCreator('migtest', testLocation())
+        target = creator.createMigration(version=42, advanced=True,body="""#!/bin/bash\necho Hello World > testspace/test_output\n""")
+        conf = Config()
+        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migtest','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
+        migrator = MigrationApplier(testLocation(), conf)
+        migrator.applyMigrations([target])
+        self.assertVersion(42)
+        self.assertFileExists(testLocation('test_output'))
