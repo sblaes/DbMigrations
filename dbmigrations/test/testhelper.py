@@ -6,7 +6,7 @@ import psycopg2
 from dbmigrations.logger import disableLogging
 
 testSpace = "testspace"
-testDb = "migtest"
+testDb = "migration_test"
 testPass = 'abcdef'
 sampleConfigBody = {'hostname':'blergh','port':42,'database':'zyxw','password':'abcdef','user':'xxx','adapter':'yyy'}
 sampleConfigFile = testSpace+"/config"
@@ -50,7 +50,7 @@ class TestCase(unittest.TestCase):
         self.dropTable('aaa')
         self.dropTable('__mig_version__')
 
-    def tableExists(self,table,database='migtest',user='dbmigrations',password='dbmigrations'):
+    def tableExists(self,table,database='migration_test',user='dbmigrations',password='dbmigrations'):
         conn = psycopg2.connect(database=database,user=user,password=password)
         cur = conn.cursor()
         cur.execute('select table_name from information_schema.tables where table_name = %s', (table,))
@@ -59,10 +59,10 @@ class TestCase(unittest.TestCase):
         conn.close()
         return result
 
-    def assertTableExists(self,table,database='migtest',user='dbmigrations',password='dbmigrations'):
+    def assertTableExists(self,table,database='migration_test',user='dbmigrations',password='dbmigrations'):
         self.assertNotEquals(None, self.tableExists(table,database,user,password))
 
-    def assertColumnExists(self,table,column,database='migtest',user='dbmigrations',password='dbmigrations'):
+    def assertColumnExists(self,table,column,database='migration_test',user='dbmigrations',password='dbmigrations'):
         conn = psycopg2.connect(database=database,user=user,password=password)
         cur = conn.cursor()
         cur.execute('select table_name from information_schema.columns where table_name = %s and column_name = %s', (table,column,))
@@ -71,7 +71,7 @@ class TestCase(unittest.TestCase):
         conn.close()
         self.assertNotEquals(None, result)
 
-    def dropTable(self,table,database='migtest',user='dbmigrations',password='dbmigrations'):
+    def dropTable(self,table,database='migration_test',user='dbmigrations',password='dbmigrations'):
         if(self.tableExists(table,database,user,password)):
             conn = psycopg2.connect(database=database,user=user,password=password)
             cur = conn.cursor()
@@ -79,7 +79,7 @@ class TestCase(unittest.TestCase):
             conn.commit()
             conn.close()
 
-    def assertTableNotExists(self,table,database='migtest',user='dbmigrations',password='dbmigrations'):
+    def assertTableNotExists(self,table,database='migration_test',user='dbmigrations',password='dbmigrations'):
         conn = psycopg2.connect(database=database,user=user,password=password)
         cur = conn.cursor()
         cur.execute('select table_name from information_schema.tables where table_name = %s', (table,))
@@ -88,7 +88,7 @@ class TestCase(unittest.TestCase):
         conn.close()
         self.assertEquals(None, result)
 
-    def assertVersion(self,version,database='migtest',user='dbmigrations',password='dbmigrations'):
+    def assertVersion(self,version,database='migration_test',user='dbmigrations',password='dbmigrations'):
         conn = psycopg2.connect(database=database,user=user,password=password)
         cur = conn.cursor()
         cur.execute('select version from __mig_version__')

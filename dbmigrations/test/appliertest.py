@@ -8,12 +8,12 @@ import json
 class ApplyTest(TestCase):
 
     def testDirectAppy(self):
-        creator = MigrationCreator('migtest', testLocation())
+        creator = MigrationCreator('migration_test', testLocation())
         target = creator.createMigration()
-        self.assertTrue(os.path.exists(testLocation('migtest',target)))
-        writeToFile(testLocation('migtest',target,'up'), 'create table xxx (yyy integer primary key);')
+        self.assertTrue(os.path.exists(testLocation('migration_test',target)))
+        writeToFile(testLocation('migration_test',target,'up'), 'create table xxx (yyy integer primary key);')
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migtest','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
+        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
         migrator = MigrationApplier(testLocation(),conf)
         migrator.applySingleMigration(target)
         self.assertTableExists('xxx')
@@ -33,11 +33,11 @@ class ApplyTest(TestCase):
         self.assertFalse(failed)
 
     def testRollback(self):
-        target = MigrationCreator('migtest', testLocation()).createMigration()
-        self.assertTrue(os.path.exists(testLocation('migtest',target)))
-        writeToFile(testLocation('migtest',target,'up'), 'create table xxx (yyy integer primary key); alter blah blah blah;')
+        target = MigrationCreator('migration_test', testLocation()).createMigration()
+        self.assertTrue(os.path.exists(testLocation('migration_test',target)))
+        writeToFile(testLocation('migration_test',target,'up'), 'create table xxx (yyy integer primary key); alter blah blah blah;')
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migtest','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
+        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
         migrator = MigrationApplier(testLocation(),conf)
         try:
             migrator.applyMigration(target)
@@ -46,12 +46,12 @@ class ApplyTest(TestCase):
         self.assertTableNotExists('xxx')
 
     def testTwoMigrationsTogether(self):
-        creator = MigrationCreator('migtest', testLocation())
+        creator = MigrationCreator('migration_test', testLocation())
         targets = []
         targets.append(creator.createMigration(version=1,body='create table xxx (yyy integer primary key);'))
         targets.append(creator.createMigration(version=2,body='create table aaa (bbb integer primary key);'))
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migtest','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
+        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
         migrator = MigrationApplier(testLocation(),conf)
         migrator.applyMigrations(targets)
         self.assertVersion(2)
@@ -61,11 +61,11 @@ class ApplyTest(TestCase):
         self.assertColumnExists('aaa','bbb')
 
     def testTwoMigrationsSeparately(self):
-        creator = MigrationCreator('migtest', testLocation())
+        creator = MigrationCreator('migration_test', testLocation())
         targets = []
         targets.append(creator.createMigration(version=1,body='create table xxx (yyy integer primary key);'))
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migtest','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
+        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
         migrator = MigrationApplier(testLocation(),conf)
         migrator.applyMigrations(targets)
         self.assertVersion(1)
@@ -76,12 +76,12 @@ class ApplyTest(TestCase):
         self.assertVersion(2)
 
     def testSecondMigrationFails(self):
-        creator = MigrationCreator('migtest', testLocation())
+        creator = MigrationCreator('migration_test', testLocation())
         targets = []
         targets.append(creator.createMigration(version=1,body='create table xxx (yyy integer primary key);'))
         targets.append(creator.createMigration(version=2,body='alter blah blah blah;'))
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migtest','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
+        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
         migrator = MigrationApplier(testLocation(),conf)
         try:
             migrator.applyMigrations(targets)
@@ -92,10 +92,10 @@ class ApplyTest(TestCase):
         self.assertTableNotExists('aaa')
 
     def testAdvancedMigration(self):
-        creator = MigrationCreator('migtest', testLocation())
+        creator = MigrationCreator('migration_test', testLocation())
         target = creator.createMigration(version=42, advanced=True,body="""#!/bin/bash\necho Hello World > testspace/test_output\n""")
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migtest','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
+        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
         migrator = MigrationApplier(testLocation(), conf)
         migrator.applyMigrations([target])
         self.assertVersion(42)
