@@ -1,5 +1,5 @@
 from dbmigrations import Config
-from dbmigrationstest import TestCase
+from dbmigrations.test import TestCase
 
 class ConfigTest(TestCase):
     def testPutAndGet(self):
