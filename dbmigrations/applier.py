@@ -77,7 +77,7 @@ class MigrationApplier:
         latestVersion = self.plugin.getLatestVersion()
         try:
             for version in sortedVersions:
-                if(int(version) > int(latestVersion)):
+                if latestVersion == None or (int(version) > int(latestVersion)):
                     self.applyMigration(version)
         finally:
             if(self.plugin.isOpen()):
