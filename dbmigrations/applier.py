@@ -74,9 +74,10 @@ class MigrationApplier:
         '''
         sortedVersions = sorted(versions)
         self.plugin.openSession()
+        latestVersion = self.plugin.getLatestVersion()
         try:
             for version in sortedVersions:
-                if(version > self.plugin.getLatestVersion()):
+                if(int(version) > int(latestVersion)):
                     self.applyMigration(version)
         finally:
             if(self.plugin.isOpen()):
@@ -92,7 +93,6 @@ class MigrationApplier:
         self.plugin.openTransaction()
         self.logger.info("Applying migration "+version)
         path = self.getUpFile(version)
-        print "%s %s" % (path, self.isAdvanced(path),)
         if self.isAdvanced(path):
             self.applyAdvancedMigration(path)
         else:
