@@ -1,25 +1,25 @@
 from dbmigrations import Config
-from dbmigrations.test import TestCase
+from dbmigrations.test import TestCase, Bunch
 
 class ConfigTest(TestCase):
     def testPutAndGet(self):
         conf = Config()
         conf.put('hello', 'world')
         self.assertTrue(conf.has('hello'))
-        self.assertEquals('world', conf.get('hello'))
+        self.assertEqual('world', conf.get('hello'))
 
     def testOperators(self):
         conf = Config()
         conf['hello'] = 'world'
         self.assertTrue('hello' in conf)
-        self.assertEquals('world', conf['hello'])
+        self.assertEqual('world', conf['hello'])
 
     def testIterator(self):
         conf = Config()
         conf['hello'] = 'world'
         for k, v in conf:
-            self.assertEquals(k, 'hello')
-            self.assertEquals(v, 'world')
+            self.assertEqual(k, 'hello')
+            self.assertEqual(v, 'world')
 
     def testFromMapWithPrefix(self):
         conf = Config()
@@ -29,7 +29,7 @@ class ConfigTest(TestCase):
         self.assertFalse(conf.has('nonprefix_foo'))
         self.assertTrue(conf.has('hello'))
         self.assertFalse(conf.has('foo'))
-        self.assertEquals('world', conf.get('hello'))
+        self.assertEqual('world', conf.get('hello'))
 
     def testFromMapLowercase(self):
         conf = Config()
@@ -37,7 +37,7 @@ class ConfigTest(TestCase):
         conf.fromMap(env, 'prefix_')
         self.assertFalse(conf.has('hElLo'))
         self.assertTrue(conf.has('hello'))
-        self.assertEquals('world', conf.get('hello'))
+        self.assertEqual('world', conf.get('hello'))
 
     def testFromMapWithoutPrefix(self):
         conf = Config()
@@ -46,5 +46,13 @@ class ConfigTest(TestCase):
         conf.fromMap(env)
         self.assertTrue('hello' in conf)
         self.assertTrue('foo' in conf)
-        self.assertEquals('jello', conf['hello'])
-        self.assertEquals('bar', conf['foo'])
+        self.assertEqual('jello', conf['hello'])
+        self.assertEqual('bar', conf['foo'])
+
+    def testPrecedence(self):
+        bucket = {'database':'mydb','options':{}, 'basedir':'.', 'prefix':'MIG_', 'host':'localhost', 'port':5432, 'user':'dbmigrations'}
+        env = {'database':'otherdb'}
+        conf = Config()
+        conf.initAll(Bunch(bucket),env)
+        self.assertEqual('mydb', conf['database'])
+

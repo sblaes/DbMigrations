@@ -39,6 +39,10 @@ def writeToFile(filename, body):
     f.write(body)
     f.close()
 
+class Bunch(object):
+  def __init__(self, adict):
+    self.__dict__.update(adict)
+
 class TestCase(unittest.TestCase):
     def setUp(self):
         create(testLocation())

@@ -35,11 +35,11 @@ class Config:
             options = {}
         self.options = options
 
-    def initAll(self,args):
+    def initAll(self,args,env=os.environ):
         self.options['host'] = 'localhost'
         self.options['port'] = '5432'
         self.options['user'] = getpass.getuser()
-        self.optiona['adapter'] = 'postgresql'
+        self.options['adapter'] = 'postgresql'
         # Configuration File
         if(args.basedir != None):
             readFromFile(self, args.basedir + '/dbmigrations.conf')
@@ -47,21 +47,21 @@ class Config:
         prefix = settings.ENVIRONMENT_PREFIX
         if(args.prefix != None):
             prefix = args.prefix
-        self.fromMap(os.environ, prefix)
+        self.fromMap(env, prefix)
         # Arguments
-        if(args.options != None):
+        if args.options:
             for pair in args.options:
                 key = pair[0]
                 value = pair[1]
                 self[key] = value
-            if(args.host != None):
-                self.options['host'] = args.host
-            if(args.database != None):
-                self.options['database'] = args.database
-            if(args.port != None):
-                self.options['port'] = args.port
-            if(args.user != None):
-                self.options['user'] = args.user
+        if args.host:
+            self.options['host'] = args.host
+        if args.database:
+            self.options['database'] = args.database
+        if args.port:
+            self.options['port'] = args.port
+        if args.user:
+            self.options['user'] = args.user
 
     def put(self, key, value):
         '''Associate value to key in this config.'''
