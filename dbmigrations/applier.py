@@ -77,8 +77,14 @@ class MigrationApplier:
         latestVersion = self.plugin.getLatestVersion()
         try:
             for version in sortedVersions:
-                if latestVersion == None or (int(version) > int(latestVersion)):
-                    self.applyMigration(version)
+                v = None
+                try:
+                    v = int(version)
+                except ValueError:
+                    pass
+                if v:
+                    if latestVersion == None or (v > int(latestVersion)):
+                        self.applyMigration(version)
         finally:
             if(self.plugin.isOpen()):
                 self.logger.warn('Migration \''+version+'\' failed. Rolling back.')
