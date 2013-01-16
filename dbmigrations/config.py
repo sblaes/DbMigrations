@@ -5,13 +5,13 @@ import json
 import formatter
 
 def initOptionParser(parser):
-    parser.add_argument('-o',nargs=2,action='append',dest='options',metavar=('KEY','VALUE'),help='Specify migrator options.')
-    parser.add_argument('-b','--basedir',dest='basedir',help='Specify the migrations base directory.')
-    parser.add_argument('--env-prefix',dest='prefix',help='Specify the environment prefix.')
-    parser.add_argument('-h',dest='host',help='Equivalent to `-o host HOST`.')
-    parser.add_argument('-d',dest='database',help='Equivalent to `-o database DATABASE`.')
-    parser.add_argument('-p',dest='port',help='Equivalent to `-o port PORT`.')
-    parser.add_argument('-U',dest='user',help='Equivalent to `-o user USER`.')
+    parser.add_argument('-o', nargs=2, action='append', dest='options', metavar=('KEY', 'VALUE'), help='Specify migrator options.')
+    parser.add_argument('-b', '--basedir', dest='basedir', help='Specify the migrations base directory.')
+    parser.add_argument('--env-prefix', dest='prefix', help='Specify the environment prefix.')
+    parser.add_argument('-h', dest='host', help='Equivalent to `-o host HOST`.')
+    parser.add_argument('-d', dest='database', help='Equivalent to `-o database DATABASE`.')
+    parser.add_argument('-p', dest='port', help='Equivalent to `-o port PORT`.')
+    parser.add_argument('-U', dest='user', help='Equivalent to `-o user USER`.')
 
 
 def main(args):
@@ -23,7 +23,7 @@ def main(args):
 def readFromFile(conf, filename):
     '''Reads the configuration from the json object in the specified file.'''
     if(os.path.exists(filename)):
-        f = open(filename,'r')
+        f = open(filename, 'r')
         body = f.read()
         f.close()
         conf.fromMap(json.loads(body))    
@@ -35,7 +35,7 @@ class Config:
             options = {}
         self.options = options
 
-    def initAll(self,args,env=os.environ):
+    def initAll(self, args, env=os.environ):
         self.options['host'] = 'localhost'
         self.options['port'] = '5432'
         self.options['user'] = getpass.getuser()
@@ -78,10 +78,10 @@ class Config:
     def fromMap(self, items, prefix=None):
         '''Read the current config from the given map. If prefix is provided, will ignore all options that do not begin with prefix, removing the prefix from the key before inserting the associated value.'''
         for k, v in items.iteritems():
-            if(prefix != None and k.find(prefix,0,len(prefix)) == 0):
+            if(prefix != None and k.find(prefix, 0, len(prefix)) == 0):
                 key = k.replace(prefix, '', 1).lower()
                 value = v
-                self.put(key,value)
+                self.put(key, value)
             elif prefix == None:
                 self.put(k, v)
 
@@ -93,7 +93,7 @@ class Config:
             for k, v in self:
                 if(len(k) > maxlength):
                     maxlength = len(k)
-            format = '{0:<'+str(maxlength+1)+'} {1}'
+            format = '{0:<' + str(maxlength + 1) + '} {1}'
             print format.format('Key', 'Value')
             for k, v in self:
                 print format.format(k, v)

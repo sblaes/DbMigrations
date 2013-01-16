@@ -1,44 +1,41 @@
-from dbmigrations import *
-from testhelper import *
-import psycopg2
-import shutil
+from dbmigrations import MigrationCreator, Config, MigrationApplier
+from testhelper import TestCase, testLocation, writeToFile, testConfig
 import os
-import json
 
 class ApplyTest(TestCase):
 
     def testDirectAppy(self):
         creator = MigrationCreator('migration_test', testLocation())
         target = creator.createMigration()
-        self.assertTrue(os.path.exists(testLocation('migration_test',target)))
-        writeToFile(testLocation('migration_test',target,'up'), 'create table xxx (yyy integer primary key);')
+        self.assertFolderExists('migration_test', target)
+        writeToFile(testLocation('migration_test', target, 'up'), 'create table xxx (yyy integer primary key);')
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
-        migrator = MigrationApplier(testLocation(),conf)
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(testLocation(), conf)
         migrator.applySingleMigration(target)
         self.assertTableExists('xxx')
-        self.assertColumnExists('xxx','yyy')
+        self.assertColumnExists('xxx', 'yyy')
 
     def testInvalidDatabase(self):
         conf = Config()
         creator = MigrationCreator('asdf', testLocation())
         target = creator.createMigration()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'asdf','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
-        migrator = MigrationApplier(testLocation(),conf)
-        falsed=True
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(testLocation(), conf)
+        failed = True
         try:
             migrator.applyMigration(target)
         except BaseException:
-            failed=False
+            failed = False
         self.assertFalse(failed)
 
     def testRollback(self):
         target = MigrationCreator('migration_test', testLocation()).createMigration()
-        self.assertTrue(os.path.exists(testLocation('migration_test',target)))
-        writeToFile(testLocation('migration_test',target,'up'), 'create table xxx (yyy integer primary key); alter blah blah blah;')
+        self.assertFolderExists('migration_test', target)
+        writeToFile(testLocation('migration_test', target, 'up'), 'create table xxx (yyy integer primary key); alter blah blah blah;')
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
-        migrator = MigrationApplier(testLocation(),conf)
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(testLocation(), conf)
         try:
             migrator.applyMigration(target)
         except:
@@ -48,55 +45,65 @@ class ApplyTest(TestCase):
     def testTwoMigrationsTogether(self):
         creator = MigrationCreator('migration_test', testLocation())
         targets = []
-        targets.append(creator.createMigration(version=1,body='create table xxx (yyy integer primary key);'))
-        targets.append(creator.createMigration(version=2,body='create table aaa (bbb integer primary key);'))
+        targets.append(creator.createMigration(version=1, body='create table xxx (yyy integer primary key);'))
+        targets.append(creator.createMigration(version=2, body='create table aaa (bbb integer primary key);'))
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
-        migrator = MigrationApplier(testLocation(),conf)
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(testLocation(), conf)
         migrator.applyMigrations(targets)
         self.assertVersion(2)
         self.assertTableExists('xxx')
-        self.assertColumnExists('xxx','yyy')
+        self.assertColumnExists('xxx', 'yyy')
         self.assertTableExists('aaa')
-        self.assertColumnExists('aaa','bbb')
+        self.assertColumnExists('aaa', 'bbb')
 
     def testTwoMigrationsSeparately(self):
         creator = MigrationCreator('migration_test', testLocation())
         targets = []
-        targets.append(creator.createMigration(version=1,body='create table xxx (yyy integer primary key);'))
+        targets.append(creator.createMigration(version=1, body='create table xxx (yyy integer primary key);'))
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
-        migrator = MigrationApplier(testLocation(),conf)
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(testLocation(), conf)
         migrator.applyMigrations(targets)
         self.assertVersion(1)
-        targets.append(creator.createMigration(version=2,body='create table aaa (bbb integer primary key);'))
+        targets.append(creator.createMigration(version=2, body='create table aaa (bbb integer primary key);'))
         migrator.applyMigrations(targets)
-        self.assertColumnExists('xxx','yyy')
-        self.assertColumnExists('aaa','bbb')
+        self.assertColumnExists('xxx', 'yyy')
+        self.assertColumnExists('aaa', 'bbb')
         self.assertVersion(2)
 
     def testSecondMigrationFails(self):
         creator = MigrationCreator('migration_test', testLocation())
         targets = []
-        targets.append(creator.createMigration(version=1,body='create table xxx (yyy integer primary key);'))
-        targets.append(creator.createMigration(version=2,body='alter blah blah blah;'))
+        targets.append(creator.createMigration(version=1, body='create table xxx (yyy integer primary key);'))
+        targets.append(creator.createMigration(version=2, body='alter blah blah blah;'))
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
-        migrator = MigrationApplier(testLocation(),conf)
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(testLocation(), conf)
         try:
             migrator.applyMigrations(targets)
-        except:
+        except:  # Error is expected
             pass
         self.assertVersion(1)
-        self.assertColumnExists('xxx','yyy')
+        self.assertColumnExists('xxx', 'yyy')
         self.assertTableNotExists('aaa')
 
     def testAdvancedMigration(self):
         creator = MigrationCreator('migration_test', testLocation())
-        target = creator.createMigration(version=42, advanced=True,body="""#!/bin/bash\necho Hello World > testspace/test_output\n""")
+        target = creator.createMigration(version=42, advanced=True, body="""#!/bin/bash\necho Hello World > testspace/test_output\n""")
         conf = Config()
-        conf.fromMap({'adapter':'postgresql','host':'localhost','port':'5432','database':'migration_test','user':'dbmigrations','password':'dbmigrations','basedir':testLocation()})
+        conf.fromMap(testConfig)
         migrator = MigrationApplier(testLocation(), conf)
         migrator.applyMigrations([target])
         self.assertVersion(42)
-        self.assertFileExists(testLocation('test_output'))
+        self.assertFileExists('test_output')
+    
+    def testPipesAdvancedOutput(self):
+        creator = MigrationCreator('migration_test', testLocation())
+        target = creator.createMigration(version=42, advanced=True, body="""#!/bin/bash\necho "create table xxx (yyy integer primary key);" """)
+        conf = Config()
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(testLocation(), conf)
+        migrator.applyMigrations([target])
+        self.assertVersion(42)
+        self.assertColumnExists('xxx', 'yyy')

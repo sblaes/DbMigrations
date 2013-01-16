@@ -1,3 +1,6 @@
 *.pyc
 *cover*
 *.sublime*
+DbMigrations.egg-info
+.project
+.pydevproject

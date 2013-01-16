@@ -1,5 +1,5 @@
 from dbmigrations import Config
-from dbmigrations.test import TestCase, Bunch
+from testhelper import TestCase, Bunch
 
 class ConfigTest(TestCase):
     def testPutAndGet(self):
@@ -50,9 +50,9 @@ class ConfigTest(TestCase):
         self.assertEqual('bar', conf['foo'])
 
     def testPrecedence(self):
-        bucket = {'database':'mydb','options':{}, 'basedir':'.', 'prefix':'MIG_', 'host':'localhost', 'port':5432, 'user':'dbmigrations'}
+        bucket = {'database':'mydb', 'options':{}, 'basedir':'.', 'prefix':'MIG_', 'host':'localhost', 'port':5432, 'user':'dbmigrations'}
         env = {'database':'otherdb'}
         conf = Config()
-        conf.initAll(Bunch(bucket),env)
+        conf.initAll(Bunch(bucket), env)
         self.assertEqual('mydb', conf['database'])
 

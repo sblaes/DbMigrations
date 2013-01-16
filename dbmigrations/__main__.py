@@ -15,7 +15,7 @@ def main():
         args.parser.print_help()
         return
     elif(args.print_version):
-        print('DbMigrations '+settings.VERSION)
+        print('DbMigrations ' + settings.VERSION)
         return
     else:
         if(args.prefix != None):
@@ -26,11 +26,11 @@ def main():
 def makeOptionParser():
     parser = argparse.ArgumentParser(prog='dbmigrations')
     parser.set_defaults(print_version=False)
-    parser.add_argument('--env-prefix',dest='prefix',default=None,help='set the environment prefix')
+    parser.add_argument('--env-prefix', dest='prefix', default=None, help='set the environment prefix')
 
     subparsers = parser.add_subparsers(title='subcommands')
-    version = subparsers.add_parser('version',add_help=False)
-    version.set_defaults(print_version=True,help=False)
+    version = subparsers.add_parser('version', add_help=False)
+    version.set_defaults(print_version=True, help=False)
 
     combineParsers(subparsers, 'create', creator.main, creator.initOptionParser)
     combineParsers(subparsers, 'apply', applier.main, applier.initOptionParser)
@@ -40,11 +40,11 @@ def makeOptionParser():
     return parser
 
 def combineParsers(subparsers, name, main, initParser=None):
-    sub = subparsers.add_parser(name,add_help=False)
+    sub = subparsers.add_parser(name, add_help=False)
     if(initParser != None):
         initParser(sub)
-    sub.add_argument("--help",dest="help",action="store_true",help="show this help message and exit")
-    sub.set_defaults(func=main,parser=sub)
+    sub.add_argument("--help", dest="help", action="store_true", help="show this help message and exit")
+    sub.set_defaults(func=main, parser=sub)
 
-if(__name__=="__main__"):
+if(__name__ == "__main__"):
     main()

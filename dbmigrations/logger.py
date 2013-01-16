@@ -41,44 +41,44 @@ import os.path
 from dbmigrations import settings
 
 class LogLevel:
-    def __init__(self,value,name):
+    def __init__(self, value, name):
         self.value = value
         self.name = name
 
-ALL = LogLevel(0,'ALL')
-DEBUG = LogLevel(1,'DEBUG')
-INFO = LogLevel(2,'INFO')
-WARN = LogLevel(3,'WARN')
-SEVERE = LogLevel(4,'SEVERE')
-ERROR = LogLevel(5,'ERROR')
-FATAL = LogLevel(6,'FATAL')
-NONE = LogLevel(7,'NONE')
+ALL = LogLevel(0, 'ALL')
+DEBUG = LogLevel(1, 'DEBUG')
+INFO = LogLevel(2, 'INFO')
+WARN = LogLevel(3, 'WARN')
+SEVERE = LogLevel(4, 'SEVERE')
+ERROR = LogLevel(5, 'ERROR')
+FATAL = LogLevel(6, 'FATAL')
+NONE = LogLevel(7, 'NONE')
 
 loggers = []
 
-def getLogger(name,levelName=settings.DEFAULT_LOG_LEVEL):
+def getLogger(name, levelName=settings.DEFAULT_LOG_LEVEL):
     '''Create a logger with the given name and log level.'''
-    logger = Logger(fromName(levelName),name)
+    logger = Logger(fromName(levelName), name)
     loggers.append(logger)
     return logger
 
 def fromName(name):
     '''Returns the logging level object with the given name.'''
-    if(name=='ALL'):
+    if(name == 'ALL'):
         return ALL
-    if(name=='DEBUG'):
+    if(name == 'DEBUG'):
         return DEBUG
-    if(name=='INFO'):
+    if(name == 'INFO'):
         return INFO
-    if(name=='WARN'):
+    if(name == 'WARN'):
         return WARN
-    if(name=='SEVERE'):
+    if(name == 'SEVERE'):
         return SEVERE
-    if(name=='ERROR'):
+    if(name == 'ERROR'):
         return ERROR
-    if(name=='FATAL'):
+    if(name == 'FATAL'):
         return FATAL
-    if(name=='NONE'):
+    if(name == 'NONE'):
         return NONE
 
 def disableLogging():
@@ -92,7 +92,7 @@ def disableLogging():
 class Logger:
     '''Logger class for filtered logging output.
     '''
-    def __init__(self,level,name):
+    def __init__(self, level, name):
         self.level = level
         self.name = name
 
@@ -109,8 +109,8 @@ class Logger:
             if(trace):
                 for frame in inspect.getouterframes(inspect.currentframe())[2:]:
                     frameText = ''
-                    frameText += "{}:{}({})".format(frame[1],frame[2],frame[3])
-                    print('    '+frameText)
+                    frameText += "{}:{}({})".format(frame[1], frame[2], frame[3])
+                    print('    ' + frameText)
 
     def debug(self, messages):
         self.logger(DEBUG, self.merge(messages))
@@ -122,13 +122,13 @@ class Logger:
         self.logger(WARN, self.merge(messages))
 
     def severe(self, messages):
-        self.logger(SEVERE, self.merge(messages),trace=True)
+        self.logger(SEVERE, self.merge(messages), trace=True)
 
     def error(self, messages):
         self.logger(ERROR, self.merge(messages))
 
     def fatal(self, messages):
-        self.logger(FATAL, self.merge(messages),trace=True)
+        self.logger(FATAL, self.merge(messages), trace=True)
 
 master_logger = getLogger('<module>')
 

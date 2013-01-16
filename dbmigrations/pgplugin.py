@@ -6,7 +6,7 @@ from dbplugin import DbPlugin
 VERSION_TABLE = "__mig_version__"
 
 class PgPlugin(DbPlugin):
-    def __init__(self,config):
+    def __init__(self, config):
         self.options = config
         self.conn = None
         self.cur = None
@@ -51,7 +51,7 @@ class PgPlugin(DbPlugin):
             self.openTransaction()
         try:
             self.createVersionTable()
-            self.cur.execute("select max(version) from "+VERSION_TABLE)
+            self.cur.execute("select max(version) from " + VERSION_TABLE)
             result = self.cur.fetchone()
             if(result == None):
                 return ''
@@ -67,11 +67,11 @@ class PgPlugin(DbPlugin):
             self.openTransaction()
         try:
             self.createVersionTable()
-            self.cur.execute("select * from "+VERSION_TABLE)
+            self.cur.execute("select * from " + VERSION_TABLE)
             if(self.cur.fetchone() != None):
-                self.cur.execute("update "+VERSION_TABLE+" set version=%s",(version,))
+                self.cur.execute("update " + VERSION_TABLE + " set version=%s", (version,))
             else:
-                self.cur.execute("insert into "+VERSION_TABLE+" values (%s,'')",(version,))
+                self.cur.execute("insert into " + VERSION_TABLE + " values (%s,'')", (version,))
         finally:
             if(not(wasOpen)):
                 self.commitTransaction()
@@ -79,4 +79,4 @@ class PgPlugin(DbPlugin):
     def createVersionTable(self):
         self.cur.execute('select table_name from information_schema.tables where table_name = %s', (VERSION_TABLE,))
         if(self.cur.fetchone() == None):
-            self.cur.execute('create table '+VERSION_TABLE+' (version varchar(255) primary key, status varchar(255))')
+            self.cur.execute('create table ' + VERSION_TABLE + ' (version varchar(255) primary key, status varchar(255))')

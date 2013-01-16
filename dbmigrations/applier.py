@@ -11,14 +11,14 @@ import subprocess
 
 def initOptionParser(parser):
     '''Initialize the subparser for MigrationApplier.'''
-    parser.add_argument('-o',nargs=2,action='append',dest='options',metavar=('KEY','VALUE'),help='Specify migrator options.')
-    parser.add_argument('-b','--basedir',dest='basedir',help='Specify the migrations base directory.')
-    parser.add_argument('-v','--version',dest='version',help='Force application of a specific version.')
-    parser.add_argument('--env-prefix',dest='prefix',help='Specify the environment prefix.')
-    parser.add_argument('-h',dest='host',help='Equivalent to `-o host HOST`.')
-    parser.add_argument('-d',dest='database',help='Equivalent to `-o database DATABASE`.')
-    parser.add_argument('-p',dest='port',help='Equivalent to `-o port PORT`.')
-    parser.add_argument('-U',dest='user',help='Equivalent to `-o user USER`.')
+    parser.add_argument('-o', nargs=2, action='append', dest='options', metavar=('KEY', 'VALUE'), help='Specify migrator options.')
+    parser.add_argument('-b', '--basedir', dest='basedir', help='Specify the migrations base directory.')
+    parser.add_argument('-v', '--version', dest='version', help='Force application of a specific version.')
+    parser.add_argument('--env-prefix', dest='prefix', help='Specify the environment prefix.')
+    parser.add_argument('-h', dest='host', help='Equivalent to `-o host HOST`.')
+    parser.add_argument('-d', dest='database', help='Equivalent to `-o database DATABASE`.')
+    parser.add_argument('-p', dest='port', help='Equivalent to `-o port PORT`.')
+    parser.add_argument('-U', dest='user', help='Equivalent to `-o user USER`.')
 
 def main(args):
     '''Run the migration applier using the given parsed command line arguments.'''
@@ -59,13 +59,13 @@ class MigrationApplier:
 
         The up file is calculated as os.path.join(basedir,databasename,version,'up')
         '''
-        return os.path.join(self.basedir,self.config['database'],version,'up')
+        return os.path.join(self.basedir, self.config['database'], version, 'up')
 
     def applyAllMigrations(self):
         '''Apply all migrations in the base directory in lexicographic order,
         starting with the first version after the current database version.
         '''
-        versions = os.listdir(os.path.join(self.basedir,self.config['database']))
+        versions = os.listdir(os.path.join(self.basedir, self.config['database']))
         self.applyMigrations(versions)
 
     def applyMigrations(self, versions):
@@ -87,7 +87,7 @@ class MigrationApplier:
                         self.applyMigration(version)
         finally:
             if(self.plugin.isOpen()):
-                self.logger.warn('Migration \''+version+'\' failed. Rolling back.')
+                self.logger.error('Migration \'' + version + '\' failed. Rolling back.')
                 self.plugin.rollbackTransaction()
             self.plugin.closeSession()
 
@@ -97,31 +97,31 @@ class MigrationApplier:
         A database connection must already be established.
         '''
         self.plugin.openTransaction()
-        self.logger.info("Applying migration "+version)
+        self.logger.info("Applying migration " + version)
         path = self.getUpFile(version)
         if self.isAdvanced(path):
             self.applyAdvancedMigration(path)
         else:
             self.applySimpleMigration(path)
-        self.logger.debug("Migration "+version+" applied successfully.")
+        self.logger.debug("Migration " + version + " applied successfully.")
         self.plugin.updateVersion(version)
         self.plugin.commitTransaction()
 
     def applyAdvancedMigration(self, path):
-        proc = subprocess.Popen(path,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        proc = subprocess.Popen(path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         result = proc.communicate()
         stdout = result[0]
         stderr = result[1]
-        if(stdout != None and stdout != ''):
-            self.logger.info('Advanced Migration stdout:')
-            self.logger.info(stdout)
-        if(stderr != None and stderr != ''):
+        if(stderr and stderr != ''):
             self.logger.info('Advanced Migration stderr:')
             self.logger.info(stderr)
             raise RuntimeError('Advanced migration failed.')
+        if(stdout and stdout != ''):
+            self.logger.debug("Piping to sql: '" + stdout + "'")
+            self.plugin.execute(stdout)
 
     def applySimpleMigration(self, path):
-        f = open(path,'r')
+        f = open(path, 'r')
         stuff = f.read()
         f.close()
         self.plugin.execute(stuff)
@@ -138,7 +138,7 @@ class MigrationApplier:
             self.applyMigration(version)
         finally:
             if(self.plugin.isOpen()):
-                self.logger.error('Migration '+version+' failed. Rolling back.')
+                self.logger.error('Migration ' + version + ' failed. Rolling back.')
                 self.plugin.rollbackTransaction()
             self.plugin.closeSession()
 
@@ -152,8 +152,8 @@ class MigrationApplier:
         if(adapter == 'postgresql'):
             self.plugin = PgPlugin(self.config)
         else:
-            raise RuntimeError("Invalid database adapter: "+adapter)
+            raise RuntimeError("Invalid database adapter: " + adapter)
         return adapter
 
-    def isAdvanced(self,filename):
+    def isAdvanced(self, filename):
         return os.path.isfile(filename) and os.access(filename, os.X_OK)
