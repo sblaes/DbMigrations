@@ -121,10 +121,16 @@ class MigrationApplier:
             self.plugin.execute(stdout)
 
     def applySimpleMigration(self, path):
-        f = open(path, 'r')
-        stuff = f.read()
-        f.close()
+        stuff = self.getMigrationBody(path)
+        if stuff == "":
+            raise RuntimeError("Invalid migration: Up file is empty")
         self.plugin.execute(stuff)
+    
+    def getMigrationBody(self, path):
+        if not(os.path.isfile(path)):
+            raise RuntimeError("Invalid migration: Up file not found.")
+        with open(path, 'r') as f:
+            return f.read()
 
     def applySingleMigration(self, version):
         '''Apply a specific migration version, establishing and closing the database

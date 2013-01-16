@@ -1,5 +1,6 @@
 from dbmigrations import MigrationCreator, Config, MigrationApplier
 from testhelper import TestCase, testLocation, writeToFile, testConfig
+import os
 
 class ApplyTest(TestCase):
 
@@ -106,3 +107,24 @@ class ApplyTest(TestCase):
         migrator.applyMigrations([target])
         self.assertVersion(42)
         self.assertColumnExists('xxx', 'yyy')
+    
+    def testEmptyUpFile(self):
+        creator = MigrationCreator('migration_test', testLocation())
+        target1 = creator.createMigration(version=17, body="""select * from __mig_version__""")
+        target2 = creator.createMigration(version=23, body="""""")
+        conf = Config()
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(testLocation(), conf)
+        self.assertRaisesRegexp(RuntimeError, "Invalid migration: Up file is empty", migrator.applyMigrations, ([target1, target2]))
+        self.assertVersion(17)
+    
+    def testMissingUpFile(self):
+        creator = MigrationCreator('migration_test', testLocation())
+        target1 = creator.createMigration(version=17, body="""select * from __mig_version__""")
+        target2 = creator.createMigration(version=23, body="""""")
+        os.remove(testLocation('migration_test',target2,'up'))
+        conf = Config()
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(testLocation(), conf)
+        self.assertRaisesRegexp(RuntimeError, "Invalid migration: Up file not found", migrator.applyMigrations, ([target1, target2]))
+        self.assertVersion(17)
