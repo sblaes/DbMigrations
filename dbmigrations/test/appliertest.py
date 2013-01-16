@@ -1,6 +1,5 @@
 from dbmigrations import MigrationCreator, Config, MigrationApplier
 from testhelper import TestCase, testLocation, writeToFile, testConfig
-import os
 
 class ApplyTest(TestCase):
 

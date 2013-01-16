@@ -7,7 +7,8 @@ import unittest
 
 testSpace = "testspace"
 testDb = "migration_test"
-testPass = 'abcdef'
+testPass = 'dbmigrations'
+testUser = 'dbmigrations'
 sampleConfigBody = {'host':'blergh', 'port':42, 'database':'zyxw', 'password':'abcdef', 'user':'xxx', 'adapter':'yyy'}
 sampleConfigFile = testSpace + "/config"
 
@@ -17,7 +18,7 @@ def testLocation(*filenames):
     else:
         return testSpace + "/" + ("/".join(filenames))
 
-testConfig = {'host':'localhost', 'port':5432, 'database':testDb, 'password':testPass, 'user':'dbmigrations', 'adapter':'postgresql',
+testConfig = {'host':'localhost', 'port':5432, 'database':testDb, 'password':testPass, 'user':testUser, 'adapter':'postgresql',
               'basedir':testLocation()}
 
 def createSampleConfig():
