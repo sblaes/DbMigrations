@@ -25,6 +25,7 @@ class PgPlugin(DbPlugin):
             raise RuntimeError("Cannot open transaction without open connection.")
         self.cur = self.conn.cursor()
         self.open = True
+        self.execute('SET statement_timeout TO 0;')
 
     def commitTransaction(self):
         self.open = False
