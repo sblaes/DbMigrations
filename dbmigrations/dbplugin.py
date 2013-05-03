@@ -3,8 +3,8 @@
 class DbPlugin:
 
     # Version Management
-    def getLatestVersion(self):
-        raise NotImplementedError("Cannot evaluate unimplemented function getLatestVersion.")
+    def shouldApplyVersion(self, version):
+        raise NotImplementedError("Cannot evaluate unimplemented function shouldApplyVersion.")
 
     def updateVersion(self, version):
         raise NotImplementedError("Cannot evaluate unimplemented function updateVersion.")

@@ -46,7 +46,7 @@ class PgPlugin(DbPlugin):
             raise RuntimeError("Cannot execute statement without open transaction.")
         return self.cur.execute(stuff)
 
-    def getLatestVersion(self):
+    def _getLatestVersion(self):
         wasOpen = self.isOpen()
         if(not(self.isOpen())):
             self.openTransaction()
@@ -81,3 +81,12 @@ class PgPlugin(DbPlugin):
         self.cur.execute('select table_name from information_schema.tables where table_name = %s', (VERSION_TABLE,))
         if(self.cur.fetchone() == None):
             self.cur.execute('create table ' + VERSION_TABLE + ' (version varchar(255) primary key, status varchar(255))')
+
+    def shouldApplyVersion(self, version):
+        latestVersion = self._getLatestVersion()
+        v = None
+        try:
+            v = int(version)
+        except ValueError:
+            return False
+        return v and (latestVersion == None or v > int(latestVersion))
