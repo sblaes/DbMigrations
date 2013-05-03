@@ -5,21 +5,21 @@ import psycopg2
 import shutil
 import unittest
 
-testSpace = "testspace"
+sampleTestWorkspace = "testspace"
 testDb = "migration_test"
 testPass = 'dbmigrations'
 testUser = 'dbmigrations'
 sampleConfigBody = {'host':'blergh', 'port':42, 'database':'zyxw', 'password':'abcdef', 'user':'xxx', 'adapter':'yyy'}
-sampleConfigFile = testSpace + "/config"
+sampleConfigFile = sampleTestWorkspace + "/config"
 
-def testLocation(*filenames):
+def locationInTestspace(*filenames):
     if(len(filenames) == 0):
-        return testSpace
+        return sampleTestWorkspace
     else:
-        return testSpace + "/" + ("/".join(filenames))
+        return sampleTestWorkspace + "/" + ("/".join(filenames))
 
 testConfig = {'host':'localhost', 'port':5432, 'database':testDb, 'password':testPass, 'user':testUser, 'adapter':'postgresql',
-              'basedir':testLocation()}
+              'basedir':locationInTestspace()}
 
 def createSampleConfig():
     writeToFile(sampleConfigFile, json.dumps(sampleConfigBody))
@@ -48,14 +48,11 @@ class Bunch(object):
 
 class TestCase(unittest.TestCase):
     def setUp(self):
-        create(testLocation())
+        create(locationInTestspace())
         disableLogging()
 
     def tearDown(self):
-        delete(testLocation())
-        self.dropTable('xxx')
-        self.dropTable('aaa')
-        self.dropTable('__mig_version__')
+        delete(locationInTestspace())
 
     def tableExists(self, table, database='migration_test', user='dbmigrations', password='dbmigrations'):
         conn = psycopg2.connect(database=database, user=user, password=password)
@@ -109,9 +106,9 @@ class TestCase(unittest.TestCase):
         self.assertTrue(os.path.isfile(filename) and os.access(filename, os.X_OK), "File " + filename + " is not executable")
 
     def assertFileExists(self, *filenames):
-        filename = apply(testLocation, filenames)
+        filename = apply(locationInTestspace, filenames)
         self.assertTrue(os.path.isfile(filename), "File " + filename + " does not exist")
     
     def assertFolderExists(self, *filenames):
-        filename = apply(testLocation, filenames)
+        filename = apply(locationInTestspace, filenames)
         self.assertTrue(os.path.isdir(filename), "Directory " + filename + " does not exist")
