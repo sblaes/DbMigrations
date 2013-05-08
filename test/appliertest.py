@@ -1,6 +1,6 @@
 from dbmigrations import MigrationCreator, Config, MigrationApplier
 from testhelper import TestCase, locationInTestspace, writeToFile, testConfig
-from fakedatabaseplugin import FakeDatabasePlugin
+from fakedatabaseplugin import FakeDatabasePlugin, FakeMultiPlugin
 import os
 
 class ApplyTest(TestCase):
@@ -14,9 +14,9 @@ class ApplyTest(TestCase):
         conf = Config()
         conf.fromMap(testConfig)
         migrator = MigrationApplier(locationInTestspace(), conf)
-        migrator.plugin = FakeDatabasePlugin()
+        migrator.plugin = FakeDatabasePlugin(self)
         migrator.applySingleMigration(target)
-        self.assertCommandWasExecuted(migrator, command)
+        migrator.plugin.assertCommandWasExecuted(command)
 
     def testRollback(self):
         command = 'create table xxx (yyy integer primary key); alter blah blah blah;'
@@ -26,12 +26,12 @@ class ApplyTest(TestCase):
         conf = Config()
         conf.fromMap(testConfig)
         migrator = MigrationApplier(locationInTestspace(), conf)
-        migrator.plugin = FakeDatabasePlugin()
+        migrator.plugin = FakeDatabasePlugin(self)
         try:
             migrator.applyMigration(target)
         except:
             pass
-        self.assertNoCommandWasExecuted(migrator)
+        migrator.plugin.assertNoCommandWasExecuted()
 
     def testTwoMigrationsTogether(self):
         command0 = 'create table xxx (yyy integer primary key);'
@@ -43,11 +43,11 @@ class ApplyTest(TestCase):
         conf = Config()
         conf.fromMap(testConfig)
         migrator = MigrationApplier(locationInTestspace(), conf)
-        migrator.plugin = FakeDatabasePlugin()
+        migrator.plugin = FakeDatabasePlugin(self)
         migrator.applyMigrations(targets)
-        self.assertVersion(migrator, 2)
-        self.assertCommandWasExecuted(migrator, command0)
-        self.assertCommandWasExecuted(migrator, command1)
+        migrator.plugin.assertCurrentVersion(2)
+        migrator.plugin.assertCommandWasExecuted(command0)
+        migrator.plugin.assertCommandWasExecuted(command1)
 
     def testTwoMigrationsSeparately(self):
         command0 = 'create table xxx (yyy integer primary key);'
@@ -58,14 +58,14 @@ class ApplyTest(TestCase):
         conf = Config()
         conf.fromMap(testConfig)
         migrator = MigrationApplier(locationInTestspace(), conf)
-        migrator.plugin = FakeDatabasePlugin()
+        migrator.plugin = FakeDatabasePlugin(self)
         migrator.applyMigrations(targets)
-        self.assertVersion(migrator, 1)
+        migrator.plugin.assertCurrentVersion(1)
         targets.append(creator.createMigration(version=2, body=command1))
         migrator.applyMigrations(targets)
-        self.assertCommandWasExecuted(migrator, command0)
-        self.assertCommandWasExecuted(migrator, command1)
-        self.assertVersion(migrator, 2)
+        migrator.plugin.assertCommandWasExecuted(command0)
+        migrator.plugin.assertCommandWasExecuted(command1)
+        migrator.plugin.assertCurrentVersion(2)
 
     def testSecondMigrationFails(self):
         command0 = 'create table xxx (yyy integer primary key);'
@@ -77,14 +77,14 @@ class ApplyTest(TestCase):
         conf = Config()
         conf.fromMap(testConfig)
         migrator = MigrationApplier(locationInTestspace(), conf)
-        migrator.plugin = FakeDatabasePlugin(failOn=command1)
+        migrator.plugin = FakeDatabasePlugin(self, failOn=command1)
         try:
             migrator.applyMigrations(targets)
         except:  # Error is expected
             pass
-        self.assertVersion(migrator, 1)
-        self.assertCommandWasExecuted(migrator, command0)
-        self.assertCommandWasNotExecuted(migrator, command1)
+        migrator.plugin.assertCurrentVersion(1)
+        migrator.plugin.assertCommandWasExecuted(command0)
+        migrator.plugin.assertCommandWasNotExecuted(command1)
 
     def testAdvancedMigration(self):
         creator = MigrationCreator('migration_test', locationInTestspace())
@@ -92,9 +92,9 @@ class ApplyTest(TestCase):
         conf = Config()
         conf.fromMap(testConfig)
         migrator = MigrationApplier(locationInTestspace(), conf)
-        migrator.plugin = FakeDatabasePlugin()
+        migrator.plugin = FakeDatabasePlugin(self)
         migrator.applyMigrations([target])
-        self.assertVersion(migrator, 42)
+        migrator.plugin.assertCurrentVersion(42)
         self.assertFileExists('test_output')
     
     def testPipesAdvancedOutput(self):
@@ -104,10 +104,10 @@ class ApplyTest(TestCase):
         conf = Config()
         conf.fromMap(testConfig)
         migrator = MigrationApplier(locationInTestspace(), conf)
-        migrator.plugin = FakeDatabasePlugin()
+        migrator.plugin = FakeDatabasePlugin(self)
         migrator.applyMigrations([target])
-        self.assertVersion(migrator, 42)
-        self.assertCommandWasExecuted(migrator, command)
+        migrator.plugin.assertCurrentVersion(42)
+        migrator.plugin.assertCommandWasExecuted(command)
     
     def testEmptyUpFile(self):
         creator = MigrationCreator('migration_test', locationInTestspace())
@@ -116,9 +116,9 @@ class ApplyTest(TestCase):
         conf = Config()
         conf.fromMap(testConfig)
         migrator = MigrationApplier(locationInTestspace(), conf)
-        migrator.plugin = FakeDatabasePlugin()
+        migrator.plugin = FakeDatabasePlugin(self)
         self.assertRaisesRegexp(RuntimeError, "Invalid migration: Up file is empty", migrator.applyMigrations, ([target1, target2]))
-        self.assertVersion(migrator, 17)
+        migrator.plugin.assertCurrentVersion(17)
     
     def testMissingUpFile(self):
         creator = MigrationCreator('migration_test', locationInTestspace())
@@ -128,22 +128,23 @@ class ApplyTest(TestCase):
         conf = Config()
         conf.fromMap(testConfig)
         migrator = MigrationApplier(locationInTestspace(), conf)
-        migrator.plugin = FakeDatabasePlugin()
+        migrator.plugin = FakeDatabasePlugin(self)
         self.assertRaisesRegexp(RuntimeError, "Invalid migration: Up file not found", migrator.applyMigrations, ([target1, target2]))
-        self.assertVersion(migrator, 17)
+        migrator.plugin.assertCurrentVersion(17)
 
-    def assertCommandWasExecuted(self, applier, command):
-        plugin = applier.plugin
-        self.assertTrue(plugin.commandWasExecuted(command), "Command '" + command + "' was not executed")
+    def testAppliesOutOfOrderMigrations(self):
+        creator = MigrationCreator('migration_test', locationInTestspace())
+        target1 = creator.createMigration(version=23, body='select 1')
+        conf = Config()
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(locationInTestspace(), conf)
+        migrator.plugin = FakeMultiPlugin(self)
+        migrator.applySingleMigration(target1)
+        target2 = creator.createMigration(version=17, body='select 2')
+        migrator.applyMigrations([target1,target2])
+        migrator.plugin.assertCurrentVersion(23)
+        migrator.plugin.assertCommandWasExecuted('select 1')
+        migrator.plugin.assertCommandWasExecuted('select 2')
 
-    def assertNoCommandWasExecuted(self, applier):
-        plugin = applier.plugin
-        self.assertEqual(0, len(plugin.committedCommands), 'Commands were executed when they shouldn\'t have.')
 
-    def assertCommandWasNotExecuted(self, applier, command):
-        plugin = applier.plugin
-        self.assertFalse(plugin.commandWasExecuted(command), "Command '" + command + "' was executed")
 
-    def assertVersion(self, applier, version):
-        plugin = applier.plugin
-        self.assertEqual(version, plugin.currentVersion, 'Expected version: '+str(version)+' but actual: '+str(plugin.currentVersion))

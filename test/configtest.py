@@ -55,4 +55,3 @@ class ConfigTest(TestCase):
         conf = Config()
         conf.initAll(Bunch(bucket), env)
         self.assertEqual('mydb', conf['database'])
-

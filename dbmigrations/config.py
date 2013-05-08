@@ -1,8 +1,7 @@
-from dbmigrations import settings
+import settings
 import getpass
 import os
 import json
-import formatter
 
 def initOptionParser(parser):
     parser.add_argument('-o', nargs=2, action='append', dest='options', metavar=('KEY', 'VALUE'), help='Specify migrator options.')
@@ -26,7 +25,7 @@ def readFromFile(conf, filename):
         f = open(filename, 'r')
         body = f.read()
         f.close()
-        conf.fromMap(json.loads(body))    
+        conf.fromMap(json.loads(body))
 
 class Config:
     '''Configuration class that behaves like a dict object, but with an additional helper function to allow for reading arguments from a dictionary with a prefix.'''
@@ -39,7 +38,7 @@ class Config:
         self.options['host'] = 'localhost'
         self.options['port'] = '5432'
         self.options['user'] = getpass.getuser()
-        self.options['adapter'] = 'postgresql'
+        self.options['adapter'] = settings.DEFAULT_ADAPTER
         # Configuration File
         if(args.basedir != None):
             readFromFile(self, args.basedir + '/dbmigrations.conf')
@@ -106,7 +105,6 @@ class Config:
 
     def __contains__(self, key):
         return self.has(key)
-
 
     def __iter__(self):
         return self.options.iteritems()

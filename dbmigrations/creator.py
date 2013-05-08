@@ -1,7 +1,7 @@
 import currtime
 import os
 import stat
-from dbmigrations.logger import getLogger, error
+from logger import getLogger, error
 
 def initOptionParser(parser):
     '''Initialize the subparser for MigrationCreator.'''
@@ -33,10 +33,7 @@ class MigrationCreator:
     def createFile(self, filename, body, advanced):
         if(not(os.path.exists(filename))):
             f = open(filename, 'w')
-            if(body == None):
-                f.write(self.sampleUpFile())
-            else:
-                f.write(body)
+            f.write(body)
             f.close()
         if(advanced):
             # 755
@@ -44,20 +41,23 @@ class MigrationCreator:
             os.chmod(filename, permissions)
 
     def createMigration(self, advanced=False, body=None, version=None):
-        if(self.database == None):
+        if self.database == None:
             raise RuntimeError("Database name must be provided.")
-        name = ""
+        if body == None:
+            body = self.sampleUpFile()
         if(version == None):
-            name = self.getVersion()
+            version = self.getVersion()
         else:
-            name = str(version)
+            version = str(version)
         self.createFolder(self.basedir)
         self.createFolder(os.path.join(self.basedir, self.database))
-        self.createFolder(os.path.join(self.basedir, self.database, name))
-        target = os.path.join(self.basedir, self.database, name, 'up')
-        self.logger.info("Created migration version %s at %s" % (name, target))
-        self.createFile(target, body, advanced)
-        return name
+        self.createFolder(os.path.join(self.basedir, self.database, version))
+        upTarget = os.path.join(self.basedir, self.database, version, 'up')
+        metaTarget = os.path.join(self.basedir, self.database, version, 'meta.json')
+        self.logger.info("Created migration version %s at %s" % (version, upTarget))
+        self.createFile(upTarget, body, advanced)
+        self.createFile(metaTarget, self.sampleMetaFile(), advanced)
+        return version
 
     def getVersion(self):
         return str(currtime.getTime())
@@ -67,3 +67,6 @@ class MigrationCreator:
 
     def sampleDownFile(self):
         return "-- Sample Down migration file.\n"
+
+    def sampleMetaFile(self):
+        return '{\n    "note": "Sample meta file."\n}'

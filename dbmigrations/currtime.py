@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-import sys
 import re
 import httplib
 from datetime import datetime, tzinfo, timedelta
-from sys import exit, argv
+from sys import exit
 
 # Borrowed shamelessly from python documentation at
 # http://docs.python.org/library/datetime.html#datetime.tzinfo

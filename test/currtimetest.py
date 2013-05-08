@@ -1,4 +1,4 @@
-from testhelper import *
+from testhelper import TestCase
 from dbmigrations.currtime import getDatestampFromTimestamp
 
 class CurrtimeTest(TestCase):

@@ -2,7 +2,8 @@
 
 class FakeDatabasePlugin:
 
-    def __init__(self, currentVersion=None, failOn=None):
+    def __init__(self, testClass, currentVersion=None, failOn=None):
+        self.testClass = testClass
         self.currentVersion = None
         if currentVersion != None:
             self.currentVersion = int(currentVersion)
@@ -71,3 +72,35 @@ class FakeDatabasePlugin:
 
     def commandWasExecuted(self, stuff):
         return stuff in self.committedCommands
+
+    def assertCommandWasExecuted(self, command):
+        self.testClass.assertTrue(self.commandWasExecuted(command), "Command '" + command + "' was not executed")
+
+    def assertNoCommandWasExecuted(self):
+        self.testClass.assertEqual(0, len(self.committedCommands), 'Commands were executed when they shouldn\'t have.')
+
+    def assertCommandWasNotExecuted(self, command):
+        self.testClass.assertFalse(self.commandWasExecuted(command), "Command '" + command + "' was executed")
+
+    def assertCurrentVersion(self, version):
+        self.testClass.assertEqual(version, self.currentVersion, 'Expected version: '+str(version)+' but actual: '+str(self.currentVersion))
+
+class FakeMultiPlugin(FakeDatabasePlugin):
+
+
+
+    def __init__(self, testClass, currentVersion=None, failOn=None):
+        FakeDatabasePlugin.__init__(self, testClass, None, failOn)
+        self.versions = []
+        if currentVersion != None:
+            self.versions.append(currentVersion)
+
+    # Version Management
+    def shouldApplyVersion(self, version):
+        return version not in self.versions
+
+    def updateVersion(self, version):
+        self.versions.append(version)
+
+    def assertCurrentVersion(self, version):
+        self.testClass.assertIn(str(version), self.versions)

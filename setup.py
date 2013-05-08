@@ -10,4 +10,4 @@ setup(name='DbMigrations',
     packages=['dbmigrations'],
     install_requires=['setuptools','psycopg2'],
     tests_require=['nose'],
-    test_suite='dbmigrations.test')
+    test_suite='src')

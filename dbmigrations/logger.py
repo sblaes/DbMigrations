@@ -35,10 +35,8 @@ To make log management easy for entry-level functions, a master logger
 is also provided, and can be used by calling the functions debug, info, warn, severe, error, and fatal.
 """
 
-import datetime
 import inspect
-import os.path
-from dbmigrations import settings
+import settings
 
 class LogLevel:
     def __init__(self, value, name):
@@ -130,7 +128,7 @@ class Logger:
     def fatal(self, messages):
         self.logger(FATAL, self.merge(messages), trace=True)
 
-master_logger = getLogger('<module>')
+master_logger = getLogger('dbmigrations')
 
 def debug(message):
     '''Print a debug message on the master logger.'''

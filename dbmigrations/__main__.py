@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-from dbmigrations import creator, applier, config, settings
+import creator, applier, config, settings, versionupgrader
 from sys import argv
 
 parser = None
@@ -34,6 +34,7 @@ def makeOptionParser():
 
     combineParsers(subparsers, 'create', creator.main, creator.initOptionParser)
     combineParsers(subparsers, 'apply', applier.main, applier.initOptionParser)
+    combineParsers(subparsers, 'upgrade-versions', versionupgrader.main, versionupgrader.initOptionParser)
 
     if(settings.PRINT_CONFIG_ENABLED):
         combineParsers(subparsers, 'print-config', config.main, config.initOptionParser)

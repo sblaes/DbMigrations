@@ -3,9 +3,10 @@
 The migration applier class is responsible for applying migrations.
 '''
 
-from dbmigrations.pgplugin import PgPlugin
-from dbmigrations.config import Config
-from dbmigrations.logger import getLogger, error
+from pgplugin import PgPlugin
+from multiversionpg import MultiVersionPg
+from config import Config
+from logger import getLogger, error
 import os
 import subprocess
 
@@ -27,7 +28,7 @@ def main(args):
     if(args.basedir == None):
         args.basedir = '.'
     if(not(os.path.exists(args.basedir))):
-        error('Invalid migration base director: %s' % args.basedir)
+        error('Invalid migration base directory: %s' % args.basedir)
         return
     migrator = MigrationApplier(args.basedir, conf)
     if(args.version == None):
@@ -65,8 +66,10 @@ class MigrationApplier:
         '''Apply all migrations in the base directory in lexicographic order,
         starting with the first version after the current database version.
         '''
-        versions = os.listdir(os.path.join(self.basedir, self.config['database']))
-        self.applyMigrations(versions)
+        self.applyMigrations(self.getMigrationVersions())
+
+    def getMigrationVersions(self):
+        return os.listdir(os.path.join(self.basedir, self.config['database']))
 
     def applyMigrations(self, versions):
         '''Apply a specific group of migrations in lexicographic order,
@@ -148,8 +151,10 @@ class MigrationApplier:
         '''
         self.plugin = None
         adapter = self.config['adapter']
-        if(adapter == 'postgresql'):
+        if adapter == 'postgresql':
             self.plugin = PgPlugin(self.config)
+        elif adapter == 'multiversionpg':
+            self.plugin = MultiVersionPg(self.config)
         else:
             raise RuntimeError("Invalid database adapter: " + adapter)
         return adapter

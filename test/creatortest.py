@@ -1,11 +1,8 @@
 import os
-from dbmigrations import *
-from testhelper import *
+from dbmigrations import MigrationCreator
+from testhelper import locationInTestspace, TestCase
 
 class CreateTest(TestCase):
-
-    def tearDown(self):
-        delete(locationInTestspace())
 
     def testSpaceExists(self):
         self.assertTrue(os.path.exists(locationInTestspace()))
@@ -32,7 +29,14 @@ class CreateTest(TestCase):
     def testCreateMigrationWithBody(self):
         migrator = MigrationCreator("zyxw", locationInTestspace())
         target = migrator.createMigration()
-        f = open(locationInTestspace('zyxw', target, 'up'), 'r')
-        line = f.readline()
-        f.close()
-        self.assertEquals("-- Sample Up migration file.\n", line)
+        with open(locationInTestspace('zyxw', target, 'up'), 'r') as f:
+            self.assertEquals("-- Sample Up migration file.\n", f.readline())
+
+    def testCreatesMetaData(self):
+        migrator = MigrationCreator('zyxw', locationInTestspace())
+        target = migrator.createMigration()
+        self.assertFileExists('zyxw', target, 'meta.json')
+        wholeFile = ''
+        with open(locationInTestspace('zyxw', target, 'meta.json'), 'r') as f:
+            wholeFile = f.read()
+        self.assertEquals('{\n    "note": "Sample meta file."\n}', wholeFile)
