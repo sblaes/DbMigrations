@@ -40,3 +40,13 @@ class CreateTest(TestCase):
         with open(locationInTestspace('zyxw', target, 'meta.json'), 'r') as f:
             wholeFile = f.read()
         self.assertEquals('{\n    "note": "Sample meta file."\n}', wholeFile)
+
+    def testCreatesTable(self):
+        migrator = MigrationCreator('zyxw', locationInTestspace())
+        target = migrator.createMigration(args=['tableName','column:type','column2:type2'])
+        self.assertFileExists('zyxw', target, 'up')
+        wholeFile = ''
+        with open(locationInTestspace('zyxw', target, 'up'), 'r') as f:
+            wholeFile = f.read()
+        fileContent = """create table tableName (\n    column type,\n    column2 type2\n    );"""
+        self.assertEqual(fileContent, wholeFile)

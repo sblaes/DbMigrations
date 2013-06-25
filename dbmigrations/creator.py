@@ -45,10 +45,12 @@ class MigrationCreator:
             permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH
             os.chmod(filename, permissions)
 
-    def createMigration(self, advanced=False, body=None, version=None):
+    def createMigration(self, advanced=False, body=None, version=None, args=None):
         if self.database == None:
             raise RuntimeError("Database name must be provided.")
-        if body == None:
+        if args != None and body == None:
+            body = self.migrationBody(args)
+        elif body == None:
             body = self.sampleUpFile()
         if(version == None):
             version = self.getVersion()
@@ -75,3 +77,25 @@ class MigrationCreator:
 
     def sampleMetaFile(self):
         return '{\n    "note": "Sample meta file."\n}'
+
+    def migrationBody(self, args):
+        if args == None or len(args) == 0:
+            return self.sampleUpFile()
+        table_name = "SampleTable"
+        if ':' not in args[0]:
+            table_name = args[0]
+        migration = "create table %s (" % table_name
+        first = True
+        for command in args[1:]:
+            if not first:
+                migration += ',\n'
+            else:
+                migration += '\n'
+                first = False
+            if ':' in command:
+                words = command.split(':', 1)
+                migration += "    %s %s" % (words[0], words[1])
+            else:
+                self.logger.warn('Unknown command: '+command)
+        migration += "\n    );"
+        return migration
