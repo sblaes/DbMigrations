@@ -6,7 +6,7 @@ Modifying this file will alter all DbMigrations applied or created on this syste
 # DbMigrations version.
 # This is used by the installer to determine the version number,
 # and printed by `dbmigrations version`
-VERSION = '1.0.0'
+VERSION = '1.0.0-2'
 
 # The prefix for environment variables.
 ENVIRONMENT_PREFIX = 'MIG_'

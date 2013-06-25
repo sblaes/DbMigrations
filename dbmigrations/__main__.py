@@ -14,13 +14,14 @@ def main():
     if(args.help):
         args.parser.print_help()
         return
-    elif(args.print_version):
-        print('DbMigrations ' + settings.VERSION)
-        return
     else:
         if(args.prefix != None):
             settings.ENVIRONMENT_PREFIX = args.prefix
         args.func(args)
+
+def versionMain(args):
+    print('DbMigrations ' + settings.VERSION)
+    return
 
 
 def makeOptionParser():
@@ -35,6 +36,7 @@ def makeOptionParser():
     combineParsers(subparsers, 'create', creator.main, creator.initOptionParser)
     combineParsers(subparsers, 'apply', applier.main, applier.initOptionParser)
     combineParsers(subparsers, 'upgrade-versions', versionupgrader.main, versionupgrader.initOptionParser)
+    combineParsers(subparsers, 'version', versionMain)
 
     if(settings.PRINT_CONFIG_ENABLED):
         combineParsers(subparsers, 'print-config', config.main, config.initOptionParser)

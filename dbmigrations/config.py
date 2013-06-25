@@ -34,14 +34,22 @@ class Config:
             options = {}
         self.options = options
 
-    def initAll(self, args, env=os.environ):
+    def initAll(self, args, env=os.environ, basedir=None):
         self.options['host'] = 'localhost'
         self.options['port'] = '5432'
         self.options['user'] = getpass.getuser()
         self.options['adapter'] = settings.DEFAULT_ADAPTER
+
+        if basedir == None:          
+            self.readFromDotfile()
+            if self.has('basedir'):
+                basedir = self.get('basedir')
+            elif args.basedir != None:
+                basedir = args.basedir
+
         # Configuration File
-        if(args.basedir != None):
-            readFromFile(self, args.basedir + '/dbmigrations.conf')
+        if(basedir != None):
+            readFromFile(self, basedir + '/dbmigrations.conf')
         # Environment
         prefix = settings.ENVIRONMENT_PREFIX
         if(args.prefix != None):
@@ -53,6 +61,8 @@ class Config:
                 key = pair[0]
                 value = pair[1]
                 self[key] = value
+        if basedir != None:
+            self.options['basedir'] = basedir
         if args.host:
             self.options['host'] = args.host
         if args.database:
@@ -61,6 +71,9 @@ class Config:
             self.options['port'] = args.port
         if args.user:
             self.options['user'] = args.user
+
+    def readFromDotfile(self):
+        readFromFile(self, '.migrc')
 
     def put(self, key, value):
         '''Associate value to key in this config.'''

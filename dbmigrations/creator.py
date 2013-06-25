@@ -2,22 +2,27 @@ import currtime
 import os
 import stat
 from logger import getLogger, error
+from config import Config
 
 def initOptionParser(parser):
     '''Initialize the subparser for MigrationCreator.'''
     parser.add_argument('-a', '--advanced', action="store_true", dest="advanced", help='Create an advanced migration.')
-    parser.add_argument('-b', '--basedir', dest='basedir', default='.', help='Specify the migrations base directory.')
+    parser.add_argument('-b', '--basedir', dest='basedir', default=None, help='Specify the migrations base directory.')
     parser.add_argument('-d', '--db', '--database', dest='database', default=None, help='Specify the database name.')
     parser.add_argument('-v', dest='version', help='Specify the migration version.')
+    parser.set_defaults(options=[],host=None,port=None,user=None)
 
 def main(args):
-    if(args.database == None):
-        error('Invalid database: %s' % args.database)
+    conf = Config()
+    conf.initAll(args, basedir=args.basedir)
+
+    if conf['database'] == None:
+        error('Invalid database: %s' % conf['database'])
         return
-    if(args.basedir == None):
-        error('Invalid migration base directory: %s' % args.basedir)
+    if conf['basedir'] == None:
+        error('Invalid migration base directory: %s' % conf['basedir'])
         return
-    creator = MigrationCreator(args.database, args.basedir)
+    creator = MigrationCreator(conf['database'], conf['basedir'])
     creator.createMigration(advanced=args.advanced, version=args.version)
 
 class MigrationCreator:

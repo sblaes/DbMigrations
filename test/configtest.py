@@ -55,3 +55,18 @@ class ConfigTest(TestCase):
         conf = Config()
         conf.initAll(Bunch(bucket), env)
         self.assertEqual('mydb', conf['database'])
+
+    def testReadDotfile(self):
+        class TestConfig(Config):
+            def readFromDotfile(conf):
+                conf.put('basedir', 'mybasedir')
+                conf.put('database', 'mydb')
+                conf.put('host', 'dbhost')
+                conf.put('port', 42)
+                conf.put('user', 'dbuser')
+        bucket = {'database':None, 'options':{}, 'prefix':'MIG_', 'host':None, 'port':5432, 'user':'dbmigrations'}
+        conf = TestConfig()
+        conf.initAll(Bunch(bucket), {})
+        self.assertEqual('mydb', conf['database'])
+        self.assertEqual('mybasedir', conf['basedir'])
+        self.assertEqual('dbhost', conf['host'])
