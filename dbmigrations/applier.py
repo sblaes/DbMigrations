@@ -10,6 +10,7 @@ from logger import getLogger, error
 import os
 import subprocess
 
+
 def initOptionParser(parser):
     '''Initialize the subparser for MigrationApplier.'''
     parser.add_argument('-o', nargs=2, action='append', dest='options', metavar=('KEY', 'VALUE'), help='Specify migrator options.')
@@ -22,20 +23,22 @@ def initOptionParser(parser):
     parser.add_argument('-U', dest='user', help='Equivalent to `-o user USER`.')
     parser.add_argument('--noop', '--dry-run', dest='dry_run', help='Print versions of migrations but do not run them.')
 
+
 def main(args):
     '''Run the migration applier using the given parsed command line arguments.'''
     conf = Config()
     conf.initAll(args)
-    if(args.basedir == None):
+    if args.basedir is None:
         args.basedir = '.'
     if(not(os.path.exists(args.basedir))):
         error('Invalid migration base directory: %s' % args.basedir)
         return
     migrator = MigrationApplier(args.basedir, conf, dry_run=args.dry_run)
-    if(args.version == None):
+    if args.version is None:
         migrator.applyAllMigrations()
     else:
         migrator.applySingleMigration(args.version)
+
 
 class MigrationApplier:
     '''MigrationApplier class
@@ -94,42 +97,39 @@ class MigrationApplier:
 
         A database connection must already be established.
         '''
-        self.plugin.openTransaction()
+        if not self.dry_run:
+            self.plugin.openTransaction()
         self.logger.info("Applying migration " + version)
-        path = self.getUpFile(version)
-        if self.isAdvanced(path):
-            self.applyAdvancedMigration(path)
-        else:
-            self.applySimpleMigration(path)
+        if not self.dry_run:
+            path = self.getUpFile(version)
+            if self.isAdvanced(path):
+                self.applyAdvancedMigration(path)
+            else:
+                self.applySimpleMigration(path)
         self.logger.debug("Migration " + version + " applied successfully.")
-        self.plugin.updateVersion(version)
-        self.plugin.commitTransaction()
+        if not self.dry_run:
+            self.plugin.updateVersion(version)
+            self.plugin.commitTransaction()
 
     def applyAdvancedMigration(self, path):
-        if self.dry_run:
-            self.logger.info('Applying advanced migration: '+path)
-        else:
-            proc = subprocess.Popen(path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            result = proc.communicate()
-            stdout = result[0]
-            stderr = result[1]
-            if(stderr and stderr != ''):
-                self.logger.info('Advanced Migration stderr:')
-                self.logger.info(stderr)
-                raise RuntimeError('Advanced migration failed.')
-            if(stdout and stdout != ''):
-                self.logger.debug("Piping to sql: '" + stdout + "'")
-                self.plugin.execute(stdout)
+        proc = subprocess.Popen(path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = proc.communicate()
+        stdout = result[0]
+        stderr = result[1]
+        if(stderr and stderr != ''):
+            self.logger.info('Advanced Migration stderr:')
+            self.logger.infos(stderr)
+            raise RuntimeError('Advanced migration failed.')
+        if(stdout and stdout != ''):
+            self.logger.debug("Piping to sql: '" + stdout + "'")
+            self.plugin.execute(stdout)
 
     def applySimpleMigration(self, path):
-        if self.dry_run:
-            self.logger.info('Applying advanced migration: '+path)
-        else:
-            stuff = self.getMigrationBody(path)
-            if stuff == "":
-                raise RuntimeError("Invalid migration: Up file is empty")
-            self.plugin.execute(stuff)
-    
+        stuff = self.getMigrationBody(path)
+        if stuff == "":
+            raise RuntimeError("Invalid migration: Up file is empty")
+        self.plugin.execute(stuff)
+
     def getMigrationBody(self, path):
         if not(os.path.isfile(path)):
             raise RuntimeError("Invalid migration: Up file not found.")
