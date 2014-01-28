@@ -20,6 +20,7 @@ def initOptionParser(parser):
     parser.add_argument('-d', dest='database', help='Equivalent to `-o database DATABASE`.')
     parser.add_argument('-p', dest='port', help='Equivalent to `-o port PORT`.')
     parser.add_argument('-U', dest='user', help='Equivalent to `-o user USER`.')
+    parser.add_argument('--noop', '--dry-run', dest='dry_run', help='Print versions of migrations but do not run them.')
 
 def main(args):
     '''Run the migration applier using the given parsed command line arguments.'''
@@ -30,7 +31,7 @@ def main(args):
     if(not(os.path.exists(args.basedir))):
         error('Invalid migration base directory: %s' % args.basedir)
         return
-    migrator = MigrationApplier(args.basedir, conf)
+    migrator = MigrationApplier(args.basedir, conf, dry_run=args.dry_run)
     if(args.version == None):
         migrator.applyAllMigrations()
     else:
@@ -44,12 +45,13 @@ class MigrationApplier:
     To apply a specific migration version, use applySingleMigration(version)
     '''
 
-    def __init__(self, basedir, config):
+    def __init__(self, basedir, config, dry_run=False):
         '''Create a MigrationApplier from the given base directory and configuration.
 
         The base directory must exist, and the configuration must contain ample
         information for the adapter to connect to the database.
         '''
+        self.dry_run = dry_run
         self.config = config
         self.basedir = basedir
         self.initializePlugin()
@@ -104,23 +106,29 @@ class MigrationApplier:
         self.plugin.commitTransaction()
 
     def applyAdvancedMigration(self, path):
-        proc = subprocess.Popen(path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        result = proc.communicate()
-        stdout = result[0]
-        stderr = result[1]
-        if(stderr and stderr != ''):
-            self.logger.info('Advanced Migration stderr:')
-            self.logger.info(stderr)
-            raise RuntimeError('Advanced migration failed.')
-        if(stdout and stdout != ''):
-            self.logger.debug("Piping to sql: '" + stdout + "'")
-            self.plugin.execute(stdout)
+        if self.dry_run:
+            self.logger.info('Applying advanced migration: '+path)
+        else:
+            proc = subprocess.Popen(path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result = proc.communicate()
+            stdout = result[0]
+            stderr = result[1]
+            if(stderr and stderr != ''):
+                self.logger.info('Advanced Migration stderr:')
+                self.logger.info(stderr)
+                raise RuntimeError('Advanced migration failed.')
+            if(stdout and stdout != ''):
+                self.logger.debug("Piping to sql: '" + stdout + "'")
+                self.plugin.execute(stdout)
 
     def applySimpleMigration(self, path):
-        stuff = self.getMigrationBody(path)
-        if stuff == "":
-            raise RuntimeError("Invalid migration: Up file is empty")
-        self.plugin.execute(stuff)
+        if self.dry_run:
+            self.logger.info('Applying advanced migration: '+path)
+        else:
+            stuff = self.getMigrationBody(path)
+            if stuff == "":
+                raise RuntimeError("Invalid migration: Up file is empty")
+            self.plugin.execute(stuff)
     
     def getMigrationBody(self, path):
         if not(os.path.isfile(path)):

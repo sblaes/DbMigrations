@@ -96,7 +96,7 @@ class ApplyTest(TestCase):
         migrator.applyMigrations([target])
         migrator.plugin.assertCurrentVersion(42)
         self.assertFileExists('test_output')
-    
+
     def testPipesAdvancedOutput(self):
         command = 'create table xxx (yyy integer primary key);'
         creator = MigrationCreator('migration_test', locationInTestspace())
@@ -108,7 +108,7 @@ class ApplyTest(TestCase):
         migrator.applyMigrations([target])
         migrator.plugin.assertCurrentVersion(42)
         migrator.plugin.assertCommandWasExecuted(command)
-    
+
     def testEmptyUpFile(self):
         creator = MigrationCreator('migration_test', locationInTestspace())
         target1 = creator.createMigration(version=17, body="""select * from __mig_version__""")
@@ -119,7 +119,7 @@ class ApplyTest(TestCase):
         migrator.plugin = FakeDatabasePlugin(self)
         self.assertRaisesRegexp(RuntimeError, "Invalid migration: Up file is empty", migrator.applyMigrations, ([target1, target2]))
         migrator.plugin.assertCurrentVersion(17)
-    
+
     def testMissingUpFile(self):
         creator = MigrationCreator('migration_test', locationInTestspace())
         target1 = creator.createMigration(version=17, body="""select * from __mig_version__""")
@@ -146,5 +146,17 @@ class ApplyTest(TestCase):
         migrator.plugin.assertCommandWasExecuted('select 1')
         migrator.plugin.assertCommandWasExecuted('select 2')
 
-
-
+    def testAppliesNoopMigrations(self):
+        creator = MigrationCreator('migration_test', locationInTestspace())
+        target1 = creator.createMigration(version=23, body='select 1')
+        conf = Config()
+        conf.fromMap(testConfig)
+        migrator = MigrationApplier(locationInTestspace(), conf)
+        migrator.plugin = FakeMultiPlugin(self)
+        migrator.applySingleMigration(target1)
+        migrator.plugin.assertCurrentVersion(23)
+        migrator.plugin.assertCommandWasExecuted('select 1')
+        migrator.dry_run = True
+        migrator.applySingleMigration(creator.createMigration(version=27, body='select 2'))
+        migrator.plugin.assertCurrentVersion(23)
+        migrator.plugin.assertCommandWasNotExecuted('select 2')
