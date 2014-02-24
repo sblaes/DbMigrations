@@ -4,6 +4,7 @@ import stat
 from logger import getLogger, error
 from config import Config
 
+
 def initOptionParser(parser):
     '''Initialize the subparser for MigrationCreator.'''
     parser.add_argument('-a', '--advanced', action="store_true", dest="advanced", help='Create an advanced migration.')
@@ -12,18 +13,20 @@ def initOptionParser(parser):
     parser.add_argument('-v', dest='version', help='Specify the migration version.')
     parser.set_defaults(options=[],host=None,port=None,user=None)
 
+
 def main(args):
     conf = Config()
     conf.initAll(args, basedir=args.basedir)
 
-    if conf['database'] == None:
+    if conf['database'] is None:
         error('Invalid database: %s' % conf['database'])
         return
-    if conf['basedir'] == None:
+    if conf['basedir'] is None:
         error('Invalid migration base directory: %s' % conf['basedir'])
         return
     creator = MigrationCreator(conf['database'], conf['basedir'])
     creator.createMigration(advanced=args.advanced, version=args.version)
+
 
 class MigrationCreator:
     def __init__(self, database, basedir):
@@ -46,13 +49,13 @@ class MigrationCreator:
             os.chmod(filename, permissions)
 
     def createMigration(self, advanced=False, body=None, version=None, args=None):
-        if self.database == None:
+        if self.database is None:
             raise RuntimeError("Database name must be provided.")
-        if args != None and body == None:
+        if args is not None and body is None:
             body = self.migrationBody(args)
-        elif body == None:
+        elif body is None:
             body = self.sampleUpFile()
-        if(version == None):
+        if version is None:
             version = self.getVersion()
         else:
             version = str(version)
@@ -79,7 +82,7 @@ class MigrationCreator:
         return '{\n    "note": "Sample meta file."\n}'
 
     def migrationBody(self, args):
-        if args == None or len(args) == 0:
+        if args is None or len(args) == 0:
             return self.sampleUpFile()
         table_name = "SampleTable"
         if ':' not in args[0]:
