@@ -125,7 +125,7 @@ class MigrationApplier:
             self.plugin.execute(stdout)
 
     def applySimpleMigration(self, path):
-        stuff = self.getMigrationBody(path)
+        stuff = self.getMigrationBody(path).strip()
         if stuff == "":
             raise RuntimeError("Invalid migration: Up file is empty")
         self.plugin.execute(stuff)

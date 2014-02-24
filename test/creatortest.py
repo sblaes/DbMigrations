@@ -2,6 +2,7 @@ import os
 from dbmigrations import MigrationCreator
 from testhelper import locationInTestspace, TestCase
 
+
 class CreateTest(TestCase):
 
     def testSpaceExists(self):
@@ -26,20 +27,19 @@ class CreateTest(TestCase):
         target = locationInTestspace('zyxw', name, 'up')
         self.assertExecutable(target)
 
+    def testCreateMigrationWithHeader(self):
+        migrator = MigrationCreator("zyxw", locationInTestspace())
+        header = "This is the header of the file."
+        target = migrator.createMigration(header=header)
+        with open(locationInTestspace('zyxw', target, 'up'), 'r') as f:
+            self.assertEquals("-- " + header + "\n", f.readline())
+
     def testCreateMigrationWithBody(self):
         migrator = MigrationCreator("zyxw", locationInTestspace())
-        target = migrator.createMigration()
+        body = "This is the body of the file."
+        target = migrator.createMigration(body=body)
         with open(locationInTestspace('zyxw', target, 'up'), 'r') as f:
-            self.assertEquals("-- Sample Up migration file.\n", f.readline())
-
-    def testCreatesMetaData(self):
-        migrator = MigrationCreator('zyxw', locationInTestspace())
-        target = migrator.createMigration()
-        self.assertFileExists('zyxw', target, 'meta.json')
-        wholeFile = ''
-        with open(locationInTestspace('zyxw', target, 'meta.json'), 'r') as f:
-            wholeFile = f.read()
-        self.assertEquals('{\n    "note": "Sample meta file."\n}', wholeFile)
+            self.assertEquals(body + "\n", f.readline())
 
     def testCreatesTable(self):
         migrator = MigrationCreator('zyxw', locationInTestspace())
@@ -48,5 +48,5 @@ class CreateTest(TestCase):
         wholeFile = ''
         with open(locationInTestspace('zyxw', target, 'up'), 'r') as f:
             wholeFile = f.read()
-        fileContent = """create table tableName (\n    column type,\n    column2 type2\n    );"""
+        fileContent = """create table tableName (\n    column type,\n    column2 type2\n    );\n"""
         self.assertEqual(fileContent, wholeFile)

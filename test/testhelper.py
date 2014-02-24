@@ -56,11 +56,9 @@ class Bunch(object):
 
 class TestCase(unittest.TestCase):
     def setUp(self):
+        delete(locationInTestspace())
         create(locationInTestspace())
         disableLogging()
-
-    def tearDown(self):
-        delete(locationInTestspace())
 
     def tableExists(self, table, database='migration_test', user='dbmigrations', password='dbmigrations'):
         conn = psycopg2.connect(database=database, user=user, password=password)

@@ -3,6 +3,7 @@ from testhelper import TestCase, locationInTestspace, writeToFile, testConfig
 from fakedatabaseplugin import FakeDatabasePlugin, FakeMultiPlugin
 import os
 
+
 class ApplyTest(TestCase):
 
     def testDirectAppy(self):

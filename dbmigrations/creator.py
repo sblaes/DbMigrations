@@ -1,8 +1,13 @@
-import currtime
+import currtime, datetime
 import os
 import stat
 from logger import getLogger, error
 from config import Config
+
+
+HEADER_TEMPLATE = """\
+Migration Created: {date}
+"""
 
 
 def initOptionParser(parser):
@@ -25,7 +30,12 @@ def main(args):
         error('Invalid migration base directory: %s' % conf['basedir'])
         return
     creator = MigrationCreator(conf['database'], conf['basedir'])
-    creator.createMigration(advanced=args.advanced, version=args.version)
+    creator.createMigration(advanced=args.advanced, version=args.version, header=getDefaultHeader())
+
+
+def getDefaultHeader():
+    date_str = datetime.datetime.utcnow().isoformat()
+    return HEADER_TEMPLATE.format(date=date_str)
 
 
 class MigrationCreator:
@@ -48,13 +58,17 @@ class MigrationCreator:
             permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH
             os.chmod(filename, permissions)
 
-    def createMigration(self, advanced=False, body=None, version=None, args=None):
+    def createMigration(self, advanced=False, body=None, version=None, args=None, header=None):
         if self.database is None:
             raise RuntimeError("Database name must be provided.")
-        if args is not None and body is None:
-            body = self.migrationBody(args)
-        elif body is None:
-            body = self.sampleUpFile()
+        if header is not None:
+            file_contents = "\n".join(["-- " + s for s in header.splitlines()]) + "\n\n"
+        else:
+            file_contents = ""
+        if body is not None:
+            file_contents += (body + "\n")
+        elif args is not None:
+            file_contents += self.migrationBody(args) + "\n"
         if version is None:
             version = self.getVersion()
         else:
@@ -63,23 +77,12 @@ class MigrationCreator:
         self.createFolder(os.path.join(self.basedir, self.database))
         self.createFolder(os.path.join(self.basedir, self.database, version))
         upTarget = os.path.join(self.basedir, self.database, version, 'up')
-        metaTarget = os.path.join(self.basedir, self.database, version, 'meta.json')
         self.logger.info("Created migration version %s at %s" % (version, upTarget))
-        self.createFile(upTarget, body, advanced)
-        self.createFile(metaTarget, self.sampleMetaFile(), advanced)
+        self.createFile(upTarget, file_contents, advanced)
         return version
 
     def getVersion(self):
         return str(currtime.getTime())
-
-    def sampleUpFile(self):
-        return "-- Sample Up migration file.\n"
-
-    def sampleDownFile(self):
-        return "-- Sample Down migration file.\n"
-
-    def sampleMetaFile(self):
-        return '{\n    "note": "Sample meta file."\n}'
 
     def migrationBody(self, args):
         if args is None or len(args) == 0:
