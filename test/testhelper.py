@@ -12,6 +12,7 @@ testUser = 'dbmigrations'
 sampleConfigBody = {'host':'blergh', 'port':42, 'database':'zyxw', 'password':'abcdef', 'user':'xxx', 'adapter':'yyy'}
 sampleConfigFile = sampleTestWorkspace + "/config"
 
+
 def locationInTestspace(*filenames):
     if(len(filenames) == 0):
         return sampleTestWorkspace
@@ -21,30 +22,37 @@ def locationInTestspace(*filenames):
 testConfig = {'host':'localhost', 'port':5432, 'database':testDb, 'password':testPass, 'user':testUser, 'adapter':'postgresql',
               'basedir':locationInTestspace()}
 
+
 def createSampleConfig():
     writeToFile(sampleConfigFile, json.dumps(sampleConfigBody))
     return sampleConfigFile
+
 
 def createActualConfig():
     writeToFile(sampleConfigFile, json.dumps(testConfig))
     return sampleConfigFile
 
+
 def delete(location):
     if(os.path.exists(location)):
         shutil.rmtree(location)
 
+
 def create(location):
     if(not(os.path.exists(location))):
         os.mkdir(location)
+
 
 def writeToFile(filename, body):
     f = open(filename, 'w')
     f.write(body)
     f.close()
 
+
 class Bunch(object):
     def __init__(self, adict):
         self.__dict__.update(adict)
+
 
 class TestCase(unittest.TestCase):
     def setUp(self):
@@ -108,7 +116,7 @@ class TestCase(unittest.TestCase):
     def assertFileExists(self, *filenames):
         filename = apply(locationInTestspace, filenames)
         self.assertTrue(os.path.isfile(filename), "File " + filename + " does not exist")
-    
+
     def assertFolderExists(self, *filenames):
         filename = apply(locationInTestspace, filenames)
         self.assertTrue(os.path.isdir(filename), "Directory " + filename + " does not exist")
