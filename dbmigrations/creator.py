@@ -48,12 +48,12 @@ class MigrationCreator:
         if(not(os.path.exists(filename))):
             os.mkdir(filename)
 
-    def createFile(self, filename, body, advanced):
-        if(not(os.path.exists(filename))):
+    def createFile(self, filename, body, executable):
+        if not(os.path.exists(filename)):
             f = open(filename, 'w')
             f.write(body)
             f.close()
-        if(advanced):
+        if executable:
             # 755
             permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH
             os.chmod(filename, permissions)
@@ -79,6 +79,8 @@ class MigrationCreator:
         upTarget = os.path.join(self.basedir, self.database, version, 'up')
         self.logger.info("Created migration version %s at %s" % (version, upTarget))
         self.createFile(upTarget, file_contents, advanced)
+        self.createFile(os.path.join(self.basedir, self.database, version, 'test'), '#!/usr/bin/env bash\n\n# Tests go here.\n\n# Exit with non-zero exit code to fail.\nexit 0\n# If the test fails, stdout will be surfaced.\n', True)
+        self.createFile(os.path.join(self.basedir, self.database, version, 'fixture'), '#!/usr/bin/env bash\n\n# Test setup goes here.\n\n# Non-zero exit code will fail the migration.\nexit 0\n', True)
         return version
 
     def getVersion(self):

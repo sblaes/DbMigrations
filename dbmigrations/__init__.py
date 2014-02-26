@@ -5,3 +5,4 @@ from creator import MigrationCreator
 from applier import MigrationApplier
 from config import Config
 from logger import getLogger
+from migrationtester import MigrationTester, MigrationTestFailure

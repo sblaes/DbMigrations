@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
+
 class FakeDatabasePlugin:
 
     def __init__(self, testClass, currentVersion=None, failOn=None):
         self.testClass = testClass
         self.currentVersion = None
-        if currentVersion != None:
+        if currentVersion is not None:
             self.currentVersion = int(currentVersion)
         self.failOn = failOn
         self.transactionCommands = []
@@ -15,7 +16,7 @@ class FakeDatabasePlugin:
 
     # Version Management
     def shouldApplyVersion(self, version):
-        return self.currentVersion == None or self.currentVersion < int(version)
+        return self.currentVersion is None or self.currentVersion < int(version)
 
     def updateVersion(self, version):
         self.currentVersion = int(version)
@@ -83,16 +84,14 @@ class FakeDatabasePlugin:
         self.testClass.assertFalse(self.commandWasExecuted(command), "Command '" + command + "' was executed")
 
     def assertCurrentVersion(self, version):
-        self.testClass.assertEqual(version, self.currentVersion, 'Expected version: '+str(version)+' but actual: '+str(self.currentVersion))
+        self.testClass.assertEqual(str(version), str(self.currentVersion), 'Expected version: '+str(version)+' but actual: '+str(self.currentVersion))
+
 
 class FakeMultiPlugin(FakeDatabasePlugin):
-
-
-
     def __init__(self, testClass, currentVersion=None, failOn=None):
         FakeDatabasePlugin.__init__(self, testClass, None, failOn)
         self.versions = []
-        if currentVersion != None:
+        if currentVersion is not None:
             self.versions.append(currentVersion)
 
     # Version Management

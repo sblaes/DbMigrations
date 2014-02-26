@@ -44,9 +44,13 @@ def create(location):
 
 
 def writeToFile(filename, body):
-    f = open(filename, 'w')
-    f.write(body)
-    f.close()
+    with open(filename, 'w') as f:
+        f.write(body)
+
+
+def readFromFile(filename):
+    with open(filename, 'r') as f:
+        return f.read()
 
 
 class Bunch(object):

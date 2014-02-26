@@ -5,7 +5,6 @@ import os
 
 
 class ApplyTest(TestCase):
-
     def testDirectAppy(self):
         command = 'create table xxx (yyy integer primary key);'
         creator = MigrationCreator('migration_test', locationInTestspace())

@@ -102,20 +102,33 @@ class MigrationApplier:
         self.logger.info("Applying migration " + version)
         if not self.dry_run:
             path = self.getUpFile(version)
+            self.preRun(version, path)
             if self.isAdvanced(path):
                 self.applyAdvancedMigration(path)
             else:
                 self.applySimpleMigration(path)
+            self.postRun(version, path)
         self.logger.debug("Migration " + version + " applied successfully.")
         if not self.dry_run:
             self.plugin.updateVersion(version)
             self.plugin.commitTransaction()
 
-    def applyAdvancedMigration(self, path):
+    def preRun(self, version, upfile):
+        pass
+
+    def postRun(self, version, upfile):
+        pass
+
+    def _execFile(self, path):
         proc = subprocess.Popen(path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         result = proc.communicate()
         stdout = result[0]
         stderr = result[1]
+        retcode = proc.returncode
+        return (stdout, stderr, retcode)
+
+    def applyAdvancedMigration(self, path):
+        stdout, stderr, exitcode = self._execFile(path)
         if(stderr and stderr != ''):
             self.logger.info('Advanced Migration stderr:')
             self.logger.infos(stderr)
