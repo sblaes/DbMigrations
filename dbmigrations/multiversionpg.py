@@ -2,6 +2,7 @@
 
 from pgplugin import PgPlugin, VERSION_TABLE
 
+
 class MultiVersionPg(PgPlugin):
     def __init__(self, config):
         PgPlugin.__init__(self, config)
@@ -14,6 +15,7 @@ class MultiVersionPg(PgPlugin):
         if(not(self.isOpen())):
             self.openTransaction()
         try:
+            self.createVersionTable(self)
             self.cur.execute('select count(*) from '+VERSION_TABLE+' where version=\''+version+'\';')
             result = self.cur.fetchone()
             count = result[0]
@@ -27,6 +29,7 @@ class MultiVersionPg(PgPlugin):
         if(not(self.isOpen())):
             self.openTransaction()
         try:
+            self.createVersionTable(self)
             self.createVersionTable()
             self.cur.execute("insert into " + VERSION_TABLE + " values (%s,'')", (version,))
         finally:

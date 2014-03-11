@@ -5,6 +5,7 @@ from dbplugin import DbPlugin
 
 VERSION_TABLE = "__mig_version__"
 
+
 class PgPlugin(DbPlugin):
     def __init__(self, config):
         self.options = config
@@ -13,7 +14,7 @@ class PgPlugin(DbPlugin):
         self.open = False
 
     def openSession(self):
-        if(self.options['password'] == None):
+        if(self.options['password'] is None):
             self.conn = psycopg2.connect(database=self.options['database'], host=self.options['host'],
                 port=self.options['port'], user=self.options['user'])
         else:
@@ -21,7 +22,7 @@ class PgPlugin(DbPlugin):
                 port=self.options['port'], user=self.options['user'], password=self.options['password'])
 
     def openTransaction(self):
-        if(self.conn == None):
+        if(self.conn is None):
             raise RuntimeError("Cannot open transaction without open connection.")
         self.cur = self.conn.cursor()
         self.open = True
@@ -54,7 +55,7 @@ class PgPlugin(DbPlugin):
             self.createVersionTable()
             self.cur.execute("select max(version) from " + VERSION_TABLE)
             result = self.cur.fetchone()
-            if(result == None):
+            if(result is None):
                 return ''
             else:
                 return result[0]
@@ -69,7 +70,7 @@ class PgPlugin(DbPlugin):
         try:
             self.createVersionTable()
             self.cur.execute("select * from " + VERSION_TABLE)
-            if(self.cur.fetchone() != None):
+            if(self.cur.fetchone() is not None):
                 self.cur.execute("update " + VERSION_TABLE + " set version=%s", (version,))
             else:
                 self.cur.execute("insert into " + VERSION_TABLE + " values (%s,'')", (version,))
@@ -79,7 +80,7 @@ class PgPlugin(DbPlugin):
 
     def createVersionTable(self):
         self.cur.execute('select table_name from information_schema.tables where table_name = %s', (VERSION_TABLE,))
-        if(self.cur.fetchone() == None):
+        if(self.cur.fetchone() is None):
             self.cur.execute('create table ' + VERSION_TABLE + ' (version varchar(255) primary key, status varchar(255))')
 
     def shouldApplyVersion(self, version):
@@ -89,4 +90,4 @@ class PgPlugin(DbPlugin):
             v = int(version)
         except ValueError:
             return False
-        return v and (latestVersion == None or v > int(latestVersion))
+        return v and (latestVersion is None or v > int(latestVersion))
