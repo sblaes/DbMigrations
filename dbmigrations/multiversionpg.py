@@ -15,7 +15,7 @@ class MultiVersionPg(PgPlugin):
         if(not(self.isOpen())):
             self.openTransaction()
         try:
-            self.createVersionTable(self)
+            self.createVersionTable()
             self.cur.execute('select count(*) from '+VERSION_TABLE+' where version=\''+version+'\';')
             result = self.cur.fetchone()
             count = result[0]
