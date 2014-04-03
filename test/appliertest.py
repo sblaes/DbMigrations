@@ -153,10 +153,10 @@ class ApplyTest(TestCase):
         conf.fromMap(testConfig)
         migrator = MigrationApplier(locationInTestspace(), conf)
         migrator.plugin = FakeMultiPlugin(self)
-        migrator.applySingleMigration(target1)
+        migrator.applyMigrations([target1])
         migrator.plugin.assertCurrentVersion(23)
         migrator.plugin.assertCommandWasExecuted('select 1')
         migrator.dry_run = True
-        migrator.applySingleMigration(creator.createMigration(version=27, body='select 2'))
+        migrator.applyMigrations([creator.createMigration(version=27, body='select 2')])
         migrator.plugin.assertCurrentVersion(23)
         migrator.plugin.assertCommandWasNotExecuted('select 2')
