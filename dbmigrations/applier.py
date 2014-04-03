@@ -92,7 +92,7 @@ class MigrationApplier:
                 self.plugin.rollbackTransaction()
             self.plugin.closeSession()
 
-    def applyMigration(self, version):
+    def applyMigration(self, version, update_version=True):
         '''Apply a specific migration version.
 
         A database connection must already be established.
@@ -110,7 +110,8 @@ class MigrationApplier:
             self.postRun(version, path)
         self.logger.debug("Migration " + version + " applied successfully.")
         if not self.dry_run:
-            self.plugin.updateVersion(version)
+            if update_version:
+                self.plugin.updateVersion(version)
             self.plugin.commitTransaction()
 
     def preRun(self, version, upfile):
@@ -158,7 +159,7 @@ class MigrationApplier:
         '''
         self.plugin.openSession()
         try:
-            self.applyMigration(version)
+            self.applyMigration(version, update_version=False)
         finally:
             if(self.plugin.isOpen()):
                 self.logger.error('Migration ' + version + ' failed. Rolling back.')
