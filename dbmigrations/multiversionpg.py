@@ -30,7 +30,7 @@ class MultiVersionPg(PgPlugin):
             self.openTransaction()
         try:
             self.createVersionTable()
-            self.cur.execute("insert into " + VERSION_TABLE + " values (%s,'')", (version,))
+            self.cur.execute("insert into " + VERSION_TABLE + " (version) values (%s)", (version,))
         finally:
             if(not(wasOpen)):
                 self.commitTransaction()
