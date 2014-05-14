@@ -9,6 +9,7 @@ from config import Config
 from logger import getLogger, error
 import os
 import subprocess
+import sys
 
 
 def initOptionParser(parser):
@@ -34,10 +35,23 @@ def main(args):
         error('Invalid migration base directory: %s' % args.basedir)
         return
     migrator = MigrationApplier(args.basedir, conf, dry_run=args.dry_run)
-    if args.version is None:
-        migrator.applyAllMigrations()
-    else:
-        migrator.applySingleMigration(args.version)
+    try:
+        if args.version is None:
+            migrator.applyAllMigrations()
+        else:
+            migrator.applySingleMigration(args.version)
+    except MigrationError as e:
+        print str(e)
+        sys.exit(1)
+
+
+class MigrationError(RuntimeError):
+    def __init__(self, message, cause):
+        self.message = message
+        self.cause = cause
+
+    def __str__(self):
+        return self.message + "\nCaused by: " + str(self.cause)
 
 
 class MigrationApplier:
@@ -102,16 +116,22 @@ class MigrationApplier:
         self.logger.info("Applying migration " + version)
         if not self.dry_run:
             path = self.getUpFile(version)
-            self.preRun(version, path)
-            if self.isAdvanced(path):
-                self.applyAdvancedMigration(path)
-            else:
-                self.applySimpleMigration(path)
-            self.postRun(version, path)
+            try:
+                self.preRun(version, path)
+                if self.isAdvanced(path):
+                    self.applyAdvancedMigration(path)
+                else:
+                    self.applySimpleMigration(path)
+                self.postRun(version, path)
+            except BaseException as e:
+                raise MigrationError("The migration %s failed to apply." % version, e)
         self.logger.debug("Migration " + version + " applied successfully.")
         if not self.dry_run:
             if update_version:
-                self.plugin.updateVersion(version)
+                try:
+                    self.plugin.updateVersion(version)
+                except BaseException as e:
+                    raise MigrationError("Could not update version number. Has this migration already been applied?", e)
             self.plugin.commitTransaction()
 
     def preRun(self, version, upfile):
